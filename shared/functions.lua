@@ -107,7 +107,7 @@ function SetFuelConsume(veh)
         getConsume = true
     end
 
-    if IsVehicleEngineOn(veh) then
+    if GetIsVehicleEngineRunning(veh) then
         local rpm = RoundNumber(GetVehicleCurrentRpm(veh), 1)
         local fuel = Shared.Consumption[rpm] or 0
         local vehicleClassMultiplier = Shared.VehicleClass[GetVehicleClass(veh)] or 1.0
