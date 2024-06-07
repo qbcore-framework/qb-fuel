@@ -305,7 +305,7 @@ Shared = {
         }
     },
 
-    Blacklist = { -- List of vehicle models that are blacklisted from being spawned.
+    Blacklist = { -- List of vehicle models that are blacklisted from fuel consume.
         'neon',
         'iwagen',
         'imorgon',
