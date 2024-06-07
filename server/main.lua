@@ -1,11 +1,4 @@
-RegisterNetEvent('qb-fuel:server:removePayment', function(price, payment)
-    local src = source
-    local Player = QBCore.Functions.GetPlayer(src)
-
-    if not Player then return end
-
-    Player.Functions.RemoveMoney(payment, price, 'refueling')
-end)
+-- Events
 
 RegisterNetEvent('qb-fuel:server:openFuelMenu', function(price)
     local src = source
@@ -29,7 +22,20 @@ RegisterNetEvent('qb-fuel:server:openFuelMenu', function(price)
     TriggerClientEvent('qb-menu:client:openMenu', src, menuData)
 end)
 
-QBCore.Commands.Add('addfuel', "Add fuel to the vehicle", {{ name = "Amount", help = "Amount of fuel to add" }}, true, function(source, args)
+RegisterNetEvent('qb-fuel:server:removePayment', function(price, payment)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+
+    if not Player then return end
+
+    if Player.Functions.RemoveMoney(payment, price, 'refueling') then
+        QBCore.Functions.Notify(src, ('You paid $%s from your %s'):format(price, payment), 'success')
+    end
+end)
+
+-- Commands
+
+QBCore.Commands.Add('setfuel', 'Set fuel to the vehicle', {{ name = 'Amount', help = 'Amount of fuel to add' }}, true, function(source, args)
     local src = source
     local amount = tonumber(args[1])
 

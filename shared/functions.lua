@@ -3,8 +3,8 @@
 QBCore = exports['qb-core']:GetCoreObject()
 stationZones = {}
 checkStation = false
-getNozzle = false
 getRefuel = false
+getNozzle = false
 getConsume = false
 nozzleProp = nil
 
@@ -107,13 +107,14 @@ function SetFuelConsume(veh)
         getConsume = true
     end
 
-    if GetIsVehicleEngineRunning(veh) then
+    if IsVehicleEngineOn(veh) then
         local rpm = RoundNumber(GetVehicleCurrentRpm(veh), 1)
         local fuel = Shared.Consumption[rpm] or 0
         local vehicleClassMultiplier = Shared.VehicleClass[GetVehicleClass(veh)] or 1.0
         local fuelConsumption = fuel * vehicleClassMultiplier / 10
 
         SetFuel(veh, GetVehicleFuelLevel(veh) - fuelConsumption)
+        SetVehicleEngineOn(veh, true, true, true)
     end
 
     SetVehicleEngineOn(veh, true, true, true)
@@ -178,6 +179,23 @@ end
 
 function IsVehicleValid(vehicle)
     return DoesEntityExist(vehicle) and IsEntityAVehicle(vehicle)
+end
+
+function MonitorVehicleFuelConsumption()
+    PopulateBlacklist()
+    while true do
+        Wait(1000)
+        local ped = PlayerPedId()
+
+        if IsPedInAnyVehicle(ped) then
+            local veh = GetVehiclePedIsIn(ped)
+            if not IsVehicleBlacklisted(veh) and GetPedInVehicleSeat(veh, -1) == ped then
+                SetFuelConsume(veh)
+            end
+        else
+            getConsume = false
+        end
+    end
 end
 
 function GetFuel(veh)

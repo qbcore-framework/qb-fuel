@@ -1,8 +1,3 @@
--- local Variables
-
-local Target = exports['qb-target']
-local Input = exports['qb-input']
-
 -- Events
 
 RegisterNetEvent('qb-fuel:client:refuelVehicle', function(price, payment)
@@ -37,15 +32,19 @@ RegisterNetEvent('qb-fuel:client:refuelVehicle', function(price, payment)
         getRefuel = false
         SetFuel(vehicle, 100)
         TriggerServerEvent('qb-fuel:server:removePayment', price, payment, GetPlayerServerId(PlayerId()))
+        TriggerEvent('qb-fuel:client:returnNozzle')
     end, function()
         StopAnimTask(ped, 'amb@world_human_security_shine_torch@male@base', 'base', 3.0)
         getRefuel = false
+        TriggerEvent('qb-fuel:client:returnNozzle')
         QBCore.Functions.Notify('Refueling Cancelled', 'error')
     end)
 end)
 
 RegisterNetEvent('qb-fuel:client:takeNozzle', function()
-    if getNozzle then return end
+    if getNozzle then
+        return QBCore.Functions.Notify('You already have a nozzle.', 'error')
+    end
 
     local ped = PlayerPedId()
     local nozzle = 'prop_cs_fuel_nozle'
@@ -58,17 +57,17 @@ RegisterNetEvent('qb-fuel:client:takeNozzle', function()
 
     if DoesEntityExist(nozzleProp) then
         getNozzle = true
-        AttachEntityToEntity(nozzleProp, ped, GetPedBoneIndex(ped, 18905), 0.13, 0.04, 0.01, -42.0, -115.0, -63.42, 0, 1,
-            0, 1, 0, 1)
+        AttachEntityToEntity(nozzleProp, ped, GetPedBoneIndex(ped, 18905), 0.13, 0.04, 0.01, -42.0, -115.0, -63.42, 0, 1, 0, 1, 0, 1)
     end
 end)
 
 RegisterNetEvent('qb-fuel:client:returnNozzle', function()
-    if not getNozzle then return end
-
-    getNozzle = false
+    if not getNozzle then
+        return QBCore.Functions.Notify('You don\'t have a nozzle to return.', 'error')
+    end
 
     if nozzleProp then
+        getNozzle = false
         DeleteObject(nozzleProp)
         nozzleProp = nil
     end
@@ -96,7 +95,7 @@ RegisterNetEvent('qb-fuel:client:openFuelMenu', function(price)
     local playerData = QBCore.Functions.GetPlayerData()
     local money = playerData.money
 
-    local input = Input:ShowInput({
+    local input = exports['qb-input']:ShowInput({
         header = 'Fuel Station',
         submitText = 'Accept Charge: $' .. price,
         inputs = {
@@ -139,33 +138,10 @@ RegisterNetEvent('qb-fuel:client:addVehFuel', function(fuel)
     QBCore.Functions.Notify('Added ' .. fuel .. ' units of fuel to the vehicle.', 'error')
 end)
 
--- Threads
+-- Functions
 
-if Shared.NearestFuelBlips then
-    CreateThread(UpdateClosestStationBlip)
-else
-    CreateThread(CreateStationBlips)
-end
-
-CreateThread(function()
-    PopulateBlacklist()
-    while true do
-        Wait(1000)
-        local ped = PlayerPedId()
-
-        if IsPedInAnyVehicle(ped) then
-            local veh = GetVehiclePedIsIn(ped)
-            if not IsVehicleBlacklisted(veh) and GetPedInVehicleSeat(veh, -1) == ped then
-                SetFuelConsume(veh)
-            end
-        else
-            getConsume = false
-        end
-    end
-end)
-
-CreateThread(function()
-    Target:AddTargetBone(boneModels, {
+local function HandleFuelStationInteraction()
+    exports['qb-target']:AddTargetBone(boneModels, {
         options = {
             {
                 type = 'client',
@@ -173,14 +149,17 @@ CreateThread(function()
                 icon = 'fas fa-gas-pump',
                 label = 'Refuel Vehicle',
                 canInteract = function()
-                    return checkStation and getNozzle
+                    if checkStation and getNozzle then
+                        return true
+                    end
+                    return false
                 end
             }
         },
-        distance = 2.5
+        distance = 2.0
     })
 
-    Target:AddTargetModel(propModels, {
+    exports['qb-target']:AddTargetModel(propModels, {
         options = {
             {
                 type = 'client',
@@ -189,7 +168,10 @@ CreateThread(function()
                 label = 'Take Nozzle',
                 canInteract = function()
                     local ped = PlayerPedId()
-                    return not IsPedInAnyVehicle(ped) or not getNozzle
+                    if not IsPedInAnyVehicle(ped) and not getNozzle and not getRefuel then
+                        return true
+                    end
+                    return false
                 end
             },
             {
@@ -198,27 +180,39 @@ CreateThread(function()
                 icon = 'fas fa-gas-pump',
                 label = 'Return Nozzle',
                 canInteract = function()
-                    return getNozzle and not getRefuel
+                    if getNozzle and not getRefuel then
+                        return true
+                    end
+                    return false
                 end
             }
         },
-        distance = 2.5
+        distance = 2.0
     })
 
-    for k, gasStation in ipairs(Shared.FuelStations) do
-        stationZones[k] = PolyZone:Create(gasStation.poly, {
-            name = 'FuelStation' .. k,
+    for index, gasStation in ipairs(Shared.FuelStations) do
+        stationZones[index] = PolyZone:Create(gasStation.poly, {
+            name = 'FuelStation' .. index,
             minZ = gasStation.minZ,
             maxZ = gasStation.maxZ,
             debugPoly = false
         })
 
-        stationZones[k]:onPlayerInOut(function(inside)
-            if inside then
-                checkStation = true
-            else
-                checkStation = false
-            end
+        stationZones[index]:onPlayerInOut(function(inside)
+            checkStation = inside
         end)
     end
-end)
+end
+
+local function InitializeFuelSystem()
+    CreateThread(MonitorVehicleFuelConsumption)
+    CreateThread(HandleFuelStationInteraction)
+
+    if Shared.NearestFuelBlips then
+        CreateThread(UpdateClosestStationBlip)
+    else
+        CreateThread(CreateStationBlips)
+    end
+end
+
+InitializeFuelSystem()
