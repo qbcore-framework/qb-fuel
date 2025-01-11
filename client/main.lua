@@ -5,6 +5,10 @@ CurrentPump = nil
 CurrentObjects = { nozzle = nil, rope = nil }
 -- ====================|| FUNCTIONS || ==================== --
 
+local refuelVehicle = function ()
+    
+end
+
 local grabFuelFromPump = function()
     if not CurrentPump then return end
 	local ped = PlayerPedId()
@@ -139,6 +143,21 @@ local setUpTarget = function ()
             distance = 1.5
         })
     end
+
+    exports['qb-target']:AddGlobalVehicle({
+        options = {
+            {
+                num = 1,
+                icon = 'fa-solid fa-gas-pump',
+                label = 'Rellenar Gasolina',
+                action = refuelVehicle(),
+                canInteract = function()
+                    return GetSelectedPedWeapon(PlayerPedId()) == `WEAPON_PETROLCAN`
+                end
+            }
+        },
+        distance = 3
+    })
 end
 
 local init = function ()
