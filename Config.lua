@@ -5,10 +5,17 @@ Config = Config or {}
 -- time_step * revolutions_per_minute * vehicle_fuel_consumption_multiplier * global_fuel_consumption_multiplier
 Config.GlobalFuelConsumptionMultiplier = 1.0 -- GTAV Default: 1.0
 
-Config.JerryCanCost = 100 -- Cost of the Jerry Can
-Config.JerryCanRefillCost = 70 -- Cost of the Jerry Can
-Config.JerryCanLitre = 20 -- Litres of the Jerry Can
+Config.FuelPrice = 5            -- Price of the fuel per litre
 
+Config.JerryCanItem = 'WEAPON_PETROLCAN'                                    -- Item name of the Jerry Can
+Config.JerryCanCost = 100                                                   -- Cost of the Jerry Can
+Config.JerryCanLitre = 40                                                   -- Litres of the Jerry Can
+Config.JerryCanRefillCost = Config.FuelPrice * Config.Config.JerryCanLitre  -- Cost of the Jerry Can Rifill
+
+Config.RefillTime = 30                      -- Time to refill the vehicle in seconds (seconds)
+
+-- Blip settings for the gas stations
+-- see https://docs.fivem.net/docs/game-references/blips/
 Config.Blip = {
     Sprite = 361,
     Color = 0,
@@ -18,11 +25,13 @@ Config.Blip = {
     Text = 'Gasolinera'
 }
 
+-- All known pump models in game (I think)
 Config.PumpModels = {
 	-2007231801, 1339433404, 1694452750, 1933174915,
     -462817101, -469694731, -164877493
 }
 
+-- All known gas stations in game
 Config.GasStations = {
 	vector3(49.4187, 2778.793, 58.043),
 	vector3(263.894, 2606.463, 44.983),
