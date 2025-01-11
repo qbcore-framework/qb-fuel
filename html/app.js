@@ -45,14 +45,17 @@ class ProgressBar {
     }
 }
 
-let LITER_PRICE = 1.5;
-let MAX_LITER = 50;
+let LITER_PRICE = 5;
+let CURRENT_FUEL = 0;
+const MAX_LITER = 100;
 const $liter = $("#liter");
 const $price = $("#price");
+const $capacity = $("#capacity");
 const $form = $("form");
 const pb = new ProgressBar($(".progress"));
 
 const updateLimits = () => {
+    $capacity.innerText = MAX_LITER - CURRENT_FUEL;
     $liter.max = MAX_LITER;
     $price.max = Math.floor(MAX_LITER * LITER_PRICE);
 };
@@ -65,14 +68,14 @@ $liter.addEventListener("input", () => {
     }
     const price = Math.floor(liter * LITER_PRICE);
     $price.value = price;
-    pb.setValue(liter);
+    pb.setValue(CURRENT_FUEL + liter);
 });
 
 $price.addEventListener("input", () => {
     const price = parseFloat($price.value);
     const liter = Math.floor(price / LITER_PRICE);
     $liter.value = liter;
-    pb.setValue(liter);
+    pb.setValue(CURRENT_FUEL + liter);
 });
 
 $form.addEventListener("submit", (e) => {
@@ -89,7 +92,7 @@ $form.addEventListener("submit", (e) => {
         return;
     }
 
-    $post("/refill", { liter, price });
+    $post("/refill", { liter });
 });
 
 document.addEventListener("keydown", (e) => {
@@ -101,7 +104,8 @@ document.addEventListener("keydown", (e) => {
 window.addEventListener("message", ({ data }) => {
     if (data.action === "show") {
         LITER_PRICE = data.price;
-        MAX_LITER = data.max;
+        CURRENT_FUEL = data.currentFuel;
+        pb.setValue(CURRENT_FUEL);
         updateLimits();
         $("body").style.display = "block";
     }
