@@ -22,7 +22,7 @@ RegisterServerEvent('qb-fuel:server:buyJerryCan', function ()
     if not Player then return end
 
     if Player.Functions.RemoveMoney('cash', Config.JerryCanCost, 'buy-jerry-can') then
-        Player.Functions.AddItem(Config.JerryCanItem, 1, nil, { fuel = Config.JerryCanLitre })
+        Player.Functions.AddItem('weapon_petrolcan', 1, nil, { fuel = Config.JerryCanLitre })
     end
 end)
 
@@ -31,7 +31,7 @@ RegisterServerEvent('qb-fuel:server:refillJerryCan', function ()
     local Player = QBCore.Functions.GetPlayer(src)
     if not Player then return end
 
-    local jerryCan = Player.Functions.GetItemByName(Config.JerryCanItem)
+    local jerryCan = Player.Functions.GetItemByName('weapon_petrolcan')
     if not jerryCan then return Player.Functions.Notify('No tienes un bidón de gasolina', 'error') end
 
     Player.Functions.RemoveMoney('cash', Config.JerryCanRefillCost, 'refill-jerry-can')
