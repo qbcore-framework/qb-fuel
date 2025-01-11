@@ -1,0 +1,114 @@
+*,
+*::after,
+*::before {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Arial", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #ddd;
+    display: none;
+}
+
+main {
+    position: absolute;
+    right: 20px;
+    top: calc(50% - 200px);
+    background: linear-gradient(135deg, #444, #333);
+    padding: 10px;
+    border-radius: 0 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    max-width: 350px;
+}
+
+section {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+    font-size: 20px;
+    gap: 40px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: left;
+}
+
+input {
+    font-size: inherit;
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: #333;
+    width: 40px;
+    color: #ddd;
+    outline: none;
+    text-align: center;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+button {
+    font-size: inherit;
+    padding: 15px 5px;
+    margin: 5px 0;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: #333;
+    color: #ddd;
+    cursor: pointer;
+    margin-top: 20px;
+    margin-left: -20px;
+}
+
+button:hover {
+    background: #444;
+}
+
+button:active {
+    background: #555;
+}
+
+button:focus {
+    outline: none;
+}
+
+button:disabled {
+    background: #666;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+div.progress {
+    position: relative;
+    width: 90px;
+    height: 200px;
+    background: #333;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+div.progress div {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background: rgba(235, 169, 47, 0.51);
+    transition: height 0.1s;
+}
+
+#capacity {
+    color: orange;
+}

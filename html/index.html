@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="style.css" />
+        <script type="module" src="app.js"></script>
+        <title>SkyStore Fuel</title>
+    </head>
+    <body>
+        <main>
+            <h1>Combustible</h1>
+            <span
+                >Tu vehículo tiene una capacida de:
+                <span id="capacity">50</span> litros</span
+            >
+            <section>
+                <div class="progress" data-value="0" data-max="50" data-min="0">
+                    <div></div>
+                </div>
+                <form>
+                    <div>
+                        <label for="liter">Litros: &nbsp&nbsp&nbsp</label>
+                        <input
+                            min="0"
+                            max="50"
+                            type="number"
+                            id="liter"
+                            name="liter"
+                            value="0"
+                        />
+                    </div>
+                    <div>
+                        <label for="price">Precio: $</label>
+                        <input
+                            min="0"
+                            type="number"
+                            id="price"
+                            name="price"
+                            value="0"
+                        />
+                    </div>
+                    <button>Rellenar</button>
+                </form>
+            </section>
+        </main>
+    </body>
+</html>
