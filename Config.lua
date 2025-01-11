@@ -7,7 +7,6 @@ Config.GlobalFuelConsumptionMultiplier = 1.0 -- GTAV Default: 1.0
 
 Config.FuelPrice = 5            -- Price of the fuel per litre
 
-Config.JerryCanItem = 'WEAPON_PETROLCAN'                                    -- Item name of the Jerry Can
 Config.JerryCanCost = 100                                                   -- Cost of the Jerry Can
 Config.JerryCanLitre = 40                                                   -- Litres of the Jerry Can
 Config.JerryCanRefillCost = Config.FuelPrice * Config.Config.JerryCanLitre  -- Cost of the Jerry Can Rifill
