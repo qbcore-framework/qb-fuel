@@ -1,4 +1,4 @@
-NewExports = function (funcName, func)
+local newExports = function (funcName, func)
     AddEventHandler(('__cfx_export_LegacyFuel_%s'):format(funcName), function(setCB)
         setCB(func)
     end)
@@ -12,8 +12,12 @@ SetFuel = function (vehicle, fuel)
     SetVehicleFuelLevel(vehicle, fuel)
 end
 
+newExports('SetFuel', SetFuel)
+
 GetFuel = function (vehicle)
     if not DoesEntityExist(vehicle) then return end
     if not IsEntityAVehicle(vehicle) then return end
     return GetVehicleFuelLevel(vehicle)
 end
+
+newExports('GetFuel', GetFuel)
