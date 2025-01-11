@@ -84,12 +84,14 @@ local showFuelMenu = function (ent)
         price = Config.FuelPrice,
         currentFuel = GetFuel(veh),
     })
+    SetNuiFocus(true, true)
 end
 
 local hideFuelMenu = function ()
     SendNUIMessage({
         action = 'hide'
     })
+    SetNuiFocus(false, false)
 end
 
 local displayBlips = function ()
