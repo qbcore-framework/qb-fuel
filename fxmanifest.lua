@@ -25,6 +25,7 @@ server_scripts {
 files {
     "html/index.html",
     "html/app.js",
+    "html/translations.js",
     "html/style.css"
 }
 
