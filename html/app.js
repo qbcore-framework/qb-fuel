@@ -1,4 +1,8 @@
+import { TRANSLATIONS } from "./translations.js";
+
 const $ = (selector) => document.querySelector(selector);
+
+const LAGUAGE = "en";
 
 const $post = async (url, data) => {
     if (!url.startsWith("/")) url = `/${url}`;
@@ -72,6 +76,29 @@ const updateLimits = () => {
     $price.max = Math.floor(maxLiter * LITER_PRICE);
 };
 
+const setupTranslations = () => {
+    const translations = TRANSLATIONS[LAGUAGE] ?? TRANSLATIONS["en"];
+    const elements = document.querySelectorAll("[data-translations]");
+
+    elements.forEach((element) => {
+        const key = element.dataset.translations;
+        if (!translations[key]) return;
+
+        if (element.children.length > 0) {
+            let translation = translations[key];
+            [...element.children].forEach((child) => {
+                translation = translation.replace(
+                    `%${child.id}`,
+                    child.outerHTML
+                );
+            });
+            element.innerHTML = translation;
+            return;
+        }
+        element.innerText = translations[key];
+    });
+};
+
 $liter.addEventListener("input", () => {
     if ($liter.value === "") return ($liter.value = 0);
     let liter = parseFloat($liter.value);
@@ -128,3 +155,5 @@ window.addEventListener("message", ({ data }) => {
         $("body").style.display = "none";
     }
 });
+
+setupTranslations();
