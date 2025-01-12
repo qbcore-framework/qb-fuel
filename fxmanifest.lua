@@ -8,7 +8,9 @@ description "A siple Fuel System for FiveM"
 ui_page "html/index.html"
 
 shared_scripts {
-    "Config.lua"
+	'@qb-core/shared/locale.lua',
+    "Config.lua",
+	'locales/*.lua',
 }
 
 client_scripts {
