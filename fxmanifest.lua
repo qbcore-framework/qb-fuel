@@ -12,6 +12,7 @@ shared_scripts {
 }
 
 client_scripts {
+    "client/exports.lua",
     "client/main.lua"
 }
 
@@ -21,6 +22,8 @@ server_scripts {
 
 files {
     "html/index.html",
-    "html/script.js",
+    "html/app.js",
     "html/style.css"
 }
+
+provide 'LegacyFuel'
