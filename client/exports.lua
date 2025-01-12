@@ -8,8 +8,9 @@ end
 SetFuel = function (vehicle, fuel)
     if not DoesEntityExist(vehicle) then return end
     if not IsEntityAVehicle(vehicle) then return end
-    if not fuel < 0 or fuel > 100 then return end
-    SetVehicleFuelLevel(vehicle, fuel)
+    if fuel < 0 then fuel = 0 end
+    if fuel > 100 then fuel = 100 end
+    SetVehicleFuelLevel(vehicle, fuel + 0.0)
 end
 
 newExports('SetFuel', SetFuel)
