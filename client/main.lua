@@ -142,14 +142,14 @@ local setUpTarget = function ()
                     type = 'server',
                     event = 'qb-fuel:server:buyJerryCan',
                     icon = 'fa-solid fa-jar',
-                    label = Lang:t('target.buy_jerrycan', Config.JerryCanCost),
+                    label = Lang:t('target.buy_jerrycan', { price = Config.JerryCanCost }),
                 },
                 {
                     num = 3,
                     type = 'server',
                     event = 'qb-fuel:server:refillJerryCan',
                     icon = 'fa-solid fa-arrows-rotate',
-                    label = Lang:t('target.refill_jerrycan', Config.JerryCanCost),
+                    label = Lang:t('target.refill_jerrycan', { price = Config.JerryCanCost }),
                     canInteract = function()
                         return GetSelectedPedWeapon(PlayerPedId()) == `WEAPON_PETROLCAN`
                     end
