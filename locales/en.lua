@@ -15,8 +15,8 @@ local Translations = {
     },
     target = {
         put_fuel = 'Put fuel',
-        buy_jerrycan = 'Buy Jerry Can $%s',
-        refill_jerrycan = 'Refill Jerry Can $%s',
+        buy_jerrycan = 'Buy Jerry Can $%{price}',
+        refill_jerrycan = 'Refill Jerry Can $%{price}',
         refill_fuel = 'Refill Fuel',
     }
 }

@@ -15,8 +15,8 @@ local Translations = {
     },
     target = {
         put_fuel = 'Echar gasolina',
-        buy_jerrycan = 'Comprar Bidón de Gasolina $%s',
-        refill_jerrycan = 'Rellenar Bidón de Gasolina $%s',
+        buy_jerrycan = 'Comprar Bidón de Gasolina $%{price}',
+        refill_jerrycan = 'Rellenar Bidón de Gasolina $%{price}',
         refill_fuel = 'Rellenar Gasolina',
     }
 }
