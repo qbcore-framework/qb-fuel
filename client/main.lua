@@ -6,18 +6,18 @@ CurrentObjects = { nozzle = nil, rope = nil }
 -- ====================|| FUNCTIONS || ==================== --
 
 local refuelVehicle = function (veh)
-    if not veh or not DoesEntityExist(veh) then return QBCore.Functions.Notify('No se encontró ningún vehículo cerca') end
+    if not veh or not DoesEntityExist(veh) then return QBCore.Functions.Notify(Lang:t('error.no_vehicle')) end
     local ped = PlayerPedId()
     local canLiter = GetAmmoInPedWeapon(ped, `WEAPON_PETROLCAN`)
     local vehFuel = math.floor(GetFuel(veh) or 0)
-    if canLiter == 0 then return QBCore.Functions.Notify('No tienes gasolina en el bidón', 'error') end
-    if vehFuel == 100 then return QBCore.Functions.Notify('El vehículo ya está lleno de gasolina', 'error') end
+    if canLiter == 0 then return QBCore.Functions.Notify(Lang:t('error.no_fuel_can'), 'error') end
+    if vehFuel == 100 then return QBCore.Functions.Notify(Lang:t('error.vehicle_full'), 'error') end
     local liter = canLiter + vehFuel > 100 and 100 - vehFuel or canLiter
 
     QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
     TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
 
-    QBCore.Functions.Progressbar('fueling_vehicle', 'Repostando vehículo', Config.RefillTimePerLitre * liter * 1000, false, true, {
+    QBCore.Functions.Progressbar('fueling_vehicle', Lang:t('progress.refueling'), Config.RefillTimePerLitre * liter * 1000, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -26,7 +26,7 @@ local refuelVehicle = function (veh)
         TriggerServerEvent('qb-fuel:server:setCanFuel', canLiter - liter)
         SetPedAmmo(ped, `WEAPON_PETROLCAN`, canLiter - liter)
         SetFuel(veh, vehFuel + liter)
-        QBCore.Functions.Notify('Vehículo repostado', 'success')
+        QBCore.Functions.Notify(Lang:t('success.refueled'), 'success')
     end, function() end)
 end
 
@@ -63,7 +63,7 @@ local removeObjects = function ()
 end
 
 local refillVehicleFuel = function (liter)
-    if QBCore.PlayerData.money[Config.MoneyType] < liter * Config.FuelPrice then return QBCore.Functions.Notify('No tienes suficiente dinero', 'error') end
+    if QBCore.PlayerData.money[Config.MoneyType] < liter * Config.FuelPrice then return QBCore.Functions.Notify(Lang:t('error.no_money'), 'error') end
     if not CurrentPump then return end
     local veh, dis = QBCore.Functions.GetClosestVehicle()
     if not veh or veh == -1 or not DoesEntityExist(veh) then return end
@@ -76,7 +76,7 @@ local refillVehicleFuel = function (liter)
     QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
     TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
 
-    QBCore.Functions.Progressbar('fueling_vehicle', 'Repostando vehículo', Config.RefillTimePerLitre * liter * 1000, false, true, {
+    QBCore.Functions.Progressbar('fueling_vehicle', Lang:t('progress.refueling'), Config.RefillTimePerLitre * liter * 1000, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
@@ -85,9 +85,9 @@ local refillVehicleFuel = function (liter)
         removeObjects()
         local success = QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', liter)
 
-        if not success then return QBCore.Functions.Notify('No tienes suficiente dinero', 'error') end
+        if not success then return QBCore.Functions.Notify(Lang:t('error.no_money'), 'error') end
         SetFuel(veh, math.floor(GetFuel(veh) or 0) + liter)
-        QBCore.Functions.Notify('Vehículo repostado', 'success')
+        QBCore.Functions.Notify(Lang:t('success.refueled'), 'success')
     end, function()
         removeObjects()
     end)
@@ -96,8 +96,8 @@ end
 local showFuelMenu = function (ent)
     CurrentPump = ent
     local veh, dis = QBCore.Functions.GetClosestVehicle()
-    if not veh or veh == -1 then return QBCore.Functions.Notify('No se encontró ningún vehículo cerca') end
-    if dis > 5 then return QBCore.Functions.Notify('No hay vehículos cerca') end
+    if not veh or veh == -1 then return QBCore.Functions.Notify(Lang:t('error.no_vehicle')) end
+    if dis > 5 then return QBCore.Functions.Notify(Lang:t('error.no_vehicle')) end
     SendNUIMessage({
         action = 'show',
         price = Config.FuelPrice,
@@ -134,7 +134,7 @@ local setUpTarget = function ()
                 {
                     num = 1,
                     icon = 'fa-solid fa-gas-pump',
-                    label = 'Echar Gasolina',
+                    label = Lang:t('target.put_fuel'),
                     action = showFuelMenu
                 },
                 {
@@ -142,14 +142,14 @@ local setUpTarget = function ()
                     type = 'server',
                     event = 'qb-fuel:server:buyJerryCan',
                     icon = 'fa-solid fa-jar',
-                    label = 'Comprar Bidón de Gasolina $' .. Config.JerryCanCost,
+                    label = Lang:t('target.buy_jerrycan', Config.JerryCanCost),
                 },
                 {
                     num = 3,
                     type = 'server',
                     event = 'qb-fuel:server:refillJerryCan',
                     icon = 'fa-solid fa-arrows-rotate',
-                    label = 'Rellenar Bidón de Gasolina $' .. Config.JerryCanCost,
+                    label = Lang:t('target.refill_jerrycan', Config.JerryCanCost),
                     canInteract = function()
                         return GetSelectedPedWeapon(PlayerPedId()) == `WEAPON_PETROLCAN`
                     end
@@ -164,7 +164,7 @@ local setUpTarget = function ()
             {
                 num = 1,
                 icon = 'fa-solid fa-gas-pump',
-                label = 'Rellenar Gasolina',
+                label = Lang:t('target.refill_fuel'),
                 action = refuelVehicle,
                 canInteract = function()
                     return GetSelectedPedWeapon(PlayerPedId()) == `WEAPON_PETROLCAN`
