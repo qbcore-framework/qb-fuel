@@ -10,7 +10,7 @@ QBCore.Functions.CreateCallback('qb-fuel:server:refillVehicle', function (src, c
 
     local finalPrice = litres * Config.FuelPrice
     if Player.PlayerData.money.cash >= finalPrice then
-        cb(Player.Functions.RemoveMoney('cash', finalPrice, 'refuel-vehicle'))
+        cb(Player.Functions.RemoveMoney(Config.MoneyType, finalPrice, 'refuel-vehicle'))
     else
         cb(false)
     end
@@ -21,8 +21,8 @@ RegisterServerEvent('qb-fuel:server:buyJerryCan', function ()
     local Player = QBCore.Functions.GetPlayer(src)
     if not Player then return end
 
-    if Player.Functions.RemoveMoney('cash', Config.JerryCanCost, 'buy-jerry-can') then
-        Player.Functions.AddItem('weapon_petrolcan', 1, nil, { fuel = Config.JerryCanLitre })
+    if Player.Functions.RemoveMoney(Config.MoneyType, Config.JerryCanCost, 'buy-jerry-can') then
+        Player.Functions.AddItem('weapon_petrolcan', 1, nil, { fuel = Config.JerryCanLitre, ammo = Config.JerryCanLitre })
     end
 end)
 
@@ -34,7 +34,23 @@ RegisterServerEvent('qb-fuel:server:refillJerryCan', function ()
     local jerryCan = Player.Functions.GetItemByName('weapon_petrolcan')
     if not jerryCan then return Player.Functions.Notify('No tienes un bidón de gasolina', 'error') end
 
-    Player.Functions.RemoveMoney('cash', Config.JerryCanRefillCost, 'refill-jerry-can')
+    Player.Functions.RemoveMoney(Config.MoneyType, Config.JerryCanRefillCost, 'refill-jerry-can')
     jerryCan.info.fuel = Config.JerryCanLitre
-    Player.Functions.SetItem(jerryCan.slot, jerryCan)
+    jerryCan.info.ammo = Config.JerryCanLitre
+    Player.Functions.RemoveItem('weapon_petrolcan', 1, jerryCan.slot)
+    Player.Functions.AddItem('weapon_petrolcan', 1, nil, jerryCan.info)
+end)
+
+RegisterServerEvent('qb-fuel:server:setCanFuel', function (fuel)
+    local src = source
+    local Player = QBCore.Functions.GetPlayer(src)
+    if not Player then return end
+
+    local jerryCan = Player.Functions.GetItemByName('weapon_petrolcan')
+    if not jerryCan then return Player.Functions.Notify('No tienes un bidón de gasolina', 'error') end
+
+    jerryCan.info.fuel = fuel
+    jerryCan.info.ammo = fuel
+    Player.Functions.RemoveItem('weapon_petrolcan', 1, jerryCan.slot)
+    Player.Functions.AddItem('weapon_petrolcan', 1, nil, jerryCan.info)
 end)
