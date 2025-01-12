@@ -32,7 +32,7 @@ RegisterServerEvent('qb-fuel:server:refillJerryCan', function ()
     if not Player then return end
 
     local jerryCan = Player.Functions.GetItemByName('weapon_petrolcan')
-    if not jerryCan then return Player.Functions.Notify('No tienes un bidón de gasolina', 'error') end
+    if not jerryCan then return Player.Functions.Notify(Lang:t('error.no_jerrycan'), 'error') end
 
     Player.Functions.RemoveMoney(Config.MoneyType, Config.JerryCanRefillCost, 'refill-jerry-can')
     jerryCan.info.fuel = Config.JerryCanLitre
@@ -47,7 +47,7 @@ RegisterServerEvent('qb-fuel:server:setCanFuel', function (fuel)
     if not Player then return end
 
     local jerryCan = Player.Functions.GetItemByName('weapon_petrolcan')
-    if not jerryCan then return Player.Functions.Notify('No tienes un bidón de gasolina', 'error') end
+    if not jerryCan then return Player.Functions.Notify(Lang:t('error.no_jerrycan'), 'error') end
 
     jerryCan.info.fuel = fuel
     jerryCan.info.ammo = fuel
