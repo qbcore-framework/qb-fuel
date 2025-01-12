@@ -3,15 +3,16 @@ Config = Config or {}
 -- Global Fuel Consumption Multiplier. The fuel consumption of each vehicle is set in the handling
 -- file of the vehicle, in the game or in you addon vehicles. The formula (provided by the game) is: 
 -- time_step * revolutions_per_minute * vehicle_fuel_consumption_multiplier * global_fuel_consumption_multiplier
-Config.GlobalFuelConsumptionMultiplier = 1.0 -- GTAV Default: 1.0
+Config.GlobalFuelConsumptionMultiplier = 3.5 -- GTAV Default: 1.0
 
+Config.MoneyType = 'cash'       -- Money type to use for the fuel transactions
 Config.FuelPrice = 5            -- Price of the fuel per litre
 
 Config.JerryCanCost = 100                                                   -- Cost of the Jerry Can
 Config.JerryCanLitre = 40                                                   -- Litres of the Jerry Can
-Config.JerryCanRefillCost = Config.FuelPrice * Config.Config.JerryCanLitre  -- Cost of the Jerry Can Rifill
+Config.JerryCanRefillCost = Config.FuelPrice * Config.JerryCanLitre         -- Cost of the Jerry Can Rifill
 
-Config.RefillTime = 30                      -- Time to refill the vehicle in seconds (seconds)
+Config.RefillTimePerLitre = 0.5 -- Time in seconds to refill 1 litre of fuel
 
 -- Blip settings for the gas stations
 -- see https://docs.fivem.net/docs/game-references/blips/
@@ -20,7 +21,7 @@ Config.Blip = {
     Color = 0,
     Scale = 0.7,
     Display = 4,
-    ShortRange = false,
+    ShortRange = true,
     Text = 'Gasolinera'
 }
 
