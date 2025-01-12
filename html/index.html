@@ -4,16 +4,16 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="style.css" />
+        <script type="module" src="translations.js"></script>
         <script type="module" src="app.js"></script>
         <title>QBCore Fuel</title>
     </head>
     <body>
         <main>
-            <h1>Combustible</h1>
-            <span
-                >Tu vehículo tiene <span id="capacity">50</span> litros de
-                combustible</span
-            >
+            <h1 data-translations="fuel"></h1>
+            <span data-translations="vehicle_fuel">
+                <span id="capacity"></span>
+            </span>
             <section>
                 <div
                     class="progress"
@@ -25,7 +25,7 @@
                 </div>
                 <form>
                     <div>
-                        <label for="liter">Litros: &nbsp&nbsp&nbsp</label>
+                        <label for="liter" data-translations="liters"></label>
                         <input
                             min="0"
                             max="50"
@@ -36,7 +36,7 @@
                         />
                     </div>
                     <div>
-                        <label for="price">Precio: $</label>
+                        <label for="price" data-translations="price"></label>
                         <input
                             min="0"
                             type="number"
@@ -45,7 +45,7 @@
                             value="0"
                         />
                     </div>
-                    <button>Rellenar</button>
+                    <button data-translations="refill"></button>
                 </form>
             </section>
         </main>
