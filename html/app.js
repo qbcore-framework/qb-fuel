@@ -2,7 +2,8 @@ import { TRANSLATIONS } from "./translations.js";
 
 const $ = (selector) => document.querySelector(selector);
 
-const LAGUAGE = "en";
+const LANGUAGE = "es";
+document.documentElement.lang = LANGUAGE;
 
 const $post = async (url, data) => {
     if (!url.startsWith("/")) url = `/${url}`;
@@ -65,11 +66,11 @@ $(".progress").dataset.max = MAX_LITER;
 
 const $liter = $("#liter");
 const $price = $("#price");
-const $capacity = $("#capacity");
 const $form = $("form");
 const pb = new ProgressBar($(".progress"));
 
 const updateLimits = () => {
+    const $capacity = $("#capacity");
     const maxLiter = MAX_LITER - CURRENT_FUEL;
     $capacity.innerText = CURRENT_FUEL;
     $liter.max = maxLiter;
@@ -77,7 +78,7 @@ const updateLimits = () => {
 };
 
 const setupTranslations = () => {
-    const translations = TRANSLATIONS[LAGUAGE] ?? TRANSLATIONS["en"];
+    const translations = TRANSLATIONS[LANGUAGE] ?? TRANSLATIONS["en"];
     const elements = document.querySelectorAll("[data-translations]");
 
     elements.forEach((element) => {
@@ -88,7 +89,7 @@ const setupTranslations = () => {
             let translation = translations[key];
             [...element.children].forEach((child) => {
                 translation = translation.replace(
-                    `%${child.id}`,
+                    `%{${child.id}}`,
                     child.outerHTML
                 );
             });
