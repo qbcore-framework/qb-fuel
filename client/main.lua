@@ -6,13 +6,14 @@ CurrentObjects = { nozzle = nil, rope = nil }
 -- ====================|| FUNCTIONS || ==================== --
 
 local refuelVehicle = function (veh)
+    if not veh or not DoesEntityExist(veh) then return QBCore.Functions.Notify('No se encontró ningún vehículo cerca') end
     local ped = PlayerPedId()
     local canLiter = GetAmmoInPedWeapon(ped, `WEAPON_PETROLCAN`)
-    local vehFuel = math.floor(GetFuel(veh))
+    local vehFuel = math.floor(GetFuel(veh) or 0)
     if canLiter == 0 then return QBCore.Functions.Notify('No tienes gasolina en el bidón', 'error') end
     if vehFuel == 100 then return QBCore.Functions.Notify('El vehículo ya está lleno de gasolina', 'error') end
     local liter = canLiter + vehFuel > 100 and 100 - vehFuel or canLiter
-    
+
     QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
     TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
 
@@ -46,7 +47,7 @@ local grabFuelFromPump = function()
     ActivatePhysics(CurrentObjects.rope)
     Wait(50)
     local nozzlePos = GetOffsetFromEntityInWorldCoords(CurrentObjects.nozzle, 0.0, -0.033, -0.195)
-    AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y, nozzlePos.z, 5.0, false, false, nil, nil)
+    AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y, nozzlePos.z, 5.0, false, false, '', '')
 end
 
 local removeObjects = function ()
@@ -85,7 +86,7 @@ local refillVehicleFuel = function (liter)
         local success = QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', liter)
 
         if not success then return QBCore.Functions.Notify('No tienes suficiente dinero', 'error') end
-        SetFuel(veh, math.floor(GetFuel(veh)) + liter)
+        SetFuel(veh, math.floor(GetFuel(veh) or 0) + liter)
         QBCore.Functions.Notify('Vehículo repostado', 'success')
     end, function()
         removeObjects()
@@ -100,7 +101,7 @@ local showFuelMenu = function (ent)
     SendNUIMessage({
         action = 'show',
         price = Config.FuelPrice,
-        currentFuel = math.floor(GetFuel(veh)),
+        currentFuel = math.floor(GetFuel(veh) or 0),
     })
     SetNuiFocus(true, true)
 end
