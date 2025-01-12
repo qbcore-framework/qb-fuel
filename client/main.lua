@@ -5,8 +5,28 @@ CurrentPump = nil
 CurrentObjects = { nozzle = nil, rope = nil }
 -- ====================|| FUNCTIONS || ==================== --
 
-local refuelVehicle = function ()
+local refuelVehicle = function (veh)
+    local ped = PlayerPedId()
+    local canLiter = GetAmmoInPedWeapon(ped, `WEAPON_PETROLCAN`)
+    local vehFuel = math.floor(GetFuel(veh))
+    if canLiter == 0 then return QBCore.Functions.Notify('No tienes gasolina en el bidón', 'error') end
+    if vehFuel == 100 then return QBCore.Functions.Notify('El vehículo ya está lleno de gasolina', 'error') end
+    local liter = canLiter + vehFuel > 100 and 100 - vehFuel or canLiter
     
+    QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
+    TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
+
+    QBCore.Functions.Progressbar('fueling_vehicle', 'Repostando vehículo', Config.RefillTimePerLitre * liter * 1000, false, true, {
+        disableMovement = true,
+        disableCarMovement = true,
+        disableMouse = false,
+        disableCombat = true,
+    }, {}, {}, {}, function()
+        TriggerServerEvent('qb-fuel:server:setCanFuel', canLiter - liter)
+        SetPedAmmo(ped, `WEAPON_PETROLCAN`, canLiter - liter)
+        SetFuel(veh, vehFuel + liter)
+        QBCore.Functions.Notify('Vehículo repostado', 'success')
+    end, function() end)
 end
 
 local grabFuelFromPump = function()
@@ -22,19 +42,11 @@ local grabFuelFromPump = function()
     while not RopeAreTexturesLoaded() do
         Wait(0)
     end
-    RopeLoadTextures()
-    while not pump do
-        Wait(0)
-    end
     CurrentObjects.rope = AddRope(pump.x, pump.y, pump.z, 0.0, 0.0, 0.0, 3.0, 1, 1000.0, 0.0, 1.0, false, false, false, 1.0, true)
-    while not CurrentObjects.rope do
-        Wait(0)
-    end
     ActivatePhysics(CurrentObjects.rope)
     Wait(50)
-    local nozzlePos = GetEntityCoords(CurrentObjects.rope)
-    nozzlePos = GetOffsetFromEntityInWorldCoords(CurrentObjects.rope, 0.0, -0.033, -0.195)
-    AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y, nozzlePos.z, 5.0, false, false, '', '')
+    local nozzlePos = GetOffsetFromEntityInWorldCoords(CurrentObjects.nozzle, 0.0, -0.033, -0.195)
+    AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y, nozzlePos.z, 5.0, false, false, nil, nil)
 end
 
 local removeObjects = function ()
@@ -43,15 +55,17 @@ local removeObjects = function ()
         CurrentObjects.nozzle = nil
     end
     if CurrentObjects.rope then
-        DeleteEntity(CurrentObjects.rope)
+        DeleteRope(CurrentObjects.rope)
+        RopeUnloadTextures()
         CurrentObjects.rope = nil
     end
 end
 
 local refillVehicleFuel = function (liter)
+    if QBCore.PlayerData.money[Config.MoneyType] < liter * Config.FuelPrice then return QBCore.Functions.Notify('No tienes suficiente dinero', 'error') end
     if not CurrentPump then return end
     local veh, dis = QBCore.Functions.GetClosestVehicle()
-    if not veh or veh == -1 then return end
+    if not veh or veh == -1 or not DoesEntityExist(veh) then return end
     if dis > 5 then return end
 
     local ped = PlayerPedId()
@@ -61,18 +75,18 @@ local refillVehicleFuel = function (liter)
     QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
     TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
 
-    QBCore.Functions.Progressbar('fueling_vehicle', 'Repostando vehículo', Config.RefillTime * 1000, false, true, {
+    QBCore.Functions.Progressbar('fueling_vehicle', 'Repostando vehículo', Config.RefillTimePerLitre * liter * 1000, false, true, {
         disableMovement = true,
         disableCarMovement = true,
         disableMouse = false,
         disableCombat = true,
     }, {}, {}, {}, function()
         removeObjects()
-        QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', function (success)
-            if not success then return QBCore.Functions.Notify('No tienes suficiente dinero', 'error') end
-            SetFuel(veh, GetFuel(veh) + liter)
-            QBCore.Functions.Notify('Vehículo repostado', 'success')
-        end)
+        local success = QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', liter)
+
+        if not success then return QBCore.Functions.Notify('No tienes suficiente dinero', 'error') end
+        SetFuel(veh, math.floor(GetFuel(veh)) + liter)
+        QBCore.Functions.Notify('Vehículo repostado', 'success')
     end, function()
         removeObjects()
     end)
@@ -86,7 +100,7 @@ local showFuelMenu = function (ent)
     SendNUIMessage({
         action = 'show',
         price = Config.FuelPrice,
-        currentFuel = GetFuel(veh),
+        currentFuel = math.floor(GetFuel(veh)),
     })
     SetNuiFocus(true, true)
 end
@@ -120,7 +134,7 @@ local setUpTarget = function ()
                     num = 1,
                     icon = 'fa-solid fa-gas-pump',
                     label = 'Echar Gasolina',
-                    action = showFuelMenu()
+                    action = showFuelMenu
                 },
                 {
                     num = 2,
@@ -150,7 +164,7 @@ local setUpTarget = function ()
                 num = 1,
                 icon = 'fa-solid fa-gas-pump',
                 label = 'Rellenar Gasolina',
-                action = refuelVehicle(),
+                action = refuelVehicle,
                 canInteract = function()
                     return GetSelectedPedWeapon(PlayerPedId()) == `WEAPON_PETROLCAN`
                 end
@@ -170,14 +184,26 @@ end
 
 -- ====================|| NUI CALLBACKS || ==================== --
 
-RegisterNuiCallback('hide', function (_, cb)
+RegisterNuiCallback('close', function (_, cb)
     hideFuelMenu()
     cb('ok')
 end)
 
 RegisterNuiCallback('refill', function (data, cb)
+    hideFuelMenu()
     refillVehicleFuel(data.liter)
     cb('ok')
+end)
+
+-- ====================|| EVENTS || ==================== --
+
+AddEventHandler('onResourceStop', function (res)
+    if GetCurrentResourceName() ~= res then return end
+    removeObjects()
+end)
+
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(pData)
+    QBCore.PlayerData = pData
 end)
 
 -- ====================|| INITIALIZATION || ==================== --
