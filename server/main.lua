@@ -7,6 +7,7 @@ QBCore = exports["qb-core"]:GetCoreObject()
 QBCore.Functions.CreateCallback('qb-fuel:server:refillVehicle', function (src, cb, litres)
     local Player = QBCore.Functions.GetPlayer(src)
     if not Player then return end
+    if not litres then return end
 
     local finalPrice = litres * Config.FuelPrice
     if Player.PlayerData.money.cash >= finalPrice then
