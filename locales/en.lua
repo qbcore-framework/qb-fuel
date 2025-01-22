@@ -12,12 +12,16 @@ local Translations = {
         no_jerrycan = 'You do not have a jerry can',
         vehicle_full = 'The vehicle is already full of fuel',
         no_fuel_can = 'You do not have fuel in the jerry can',
+        no_nozzle = 'There is no vehicle with the nozzle attached nearby',
     },
     target = {
         put_fuel = 'Put fuel',
+        get_nozzle = 'Get nozzle',
         buy_jerrycan = 'Buy Jerry Can $%{price}',
         refill_jerrycan = 'Refill Jerry Can $%{price}',
         refill_fuel = 'Refill Fuel',
+        nozzle_put = 'Attach Nozzle',
+        nozzle_remove = 'Remove Nozzle'
     }
 }
 
