@@ -3,6 +3,8 @@
 QBCore = exports['qb-core']:GetCoreObject()
 CurrentPump = nil
 CurrentObjects = { nozzle = nil, rope = nil }
+CurrentVehicle = nil
+NozzleBones = { { bone = 'door_dside_r', ped = 'left' }, { bone = 'door_pside_r', ped = 'right' }, { bone = 'door_dside_f', ped = 'left' }, { bone = 'door_pside_f', ped = 'right' },  { bone = 'bonnet' },  { bone = 'boot' } }
 -- ====================|| FUNCTIONS || ==================== --
 
 local refuelVehicle = function (veh)
@@ -27,10 +29,12 @@ local refuelVehicle = function (veh)
         SetPedAmmo(ped, `WEAPON_PETROLCAN`, canLiter - liter)
         SetFuel(veh, vehFuel + liter)
         QBCore.Functions.Notify(Lang:t('success.refueled'), 'success')
+        ClearPedTasks(ped)
     end, function() end)
 end
 
-local grabFuelFromPump = function()
+local grabFuelFromPump = function(ent)
+    CurrentPump = ent
     if not CurrentPump then return end
 	local ped = PlayerPedId()
 	local pump = GetEntityCoords(CurrentPump)
@@ -48,9 +52,49 @@ local grabFuelFromPump = function()
     Wait(50)
     local nozzlePos = GetOffsetFromEntityInWorldCoords(CurrentObjects.nozzle, 0.0, -0.033, -0.195)
     AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y, nozzlePos.z, 5.0, false, false, '', '')
+    LocalPlayer.state:set('hasNozzle', true, true)
+end
+
+local getPedCurrentSide = function (veh)
+    local ped = PlayerPedId()
+    local pedPos = GetEntityCoords(ped)
+    local vehPos = GetEntityCoords(veh)
+    local pedSide = pedPos.x > vehPos.x and 'right' or 'left'
+    return pedSide
+end
+
+local getIdealNozzlePosition = function (veh)
+    local pedSide = getPedCurrentSide(veh)
+    for _, v in pairs(NozzleBones) do
+        local boneIndex = GetEntityBoneIndexByName(veh, v.bone)
+        if boneIndex ~= -1 then
+            if v.ped and v.ped == pedSide then
+                return boneIndex, v.bone
+            elseif not v.ped then
+                return boneIndex, v.bone
+            end
+        end
+    end
+    return -1
+end
+
+local nozzleToVehicle = function (veh)
+    DetachEntity(CurrentObjects.nozzle, false, true)
+    LocalPlayer.state:set('hasNozzle', false, true)
+    print(getIdealNozzlePosition(veh))
+    AttachEntityToEntity(CurrentObjects.nozzle, veh, getIdealNozzlePosition(veh), 0.1, -1.5, 0.3, -60.0, 0.0, 90.0, true, true, false, false, 1, true)
+    Entity(veh).state:set('nozzleAttached', true, true)
+    CurrentVehicle = veh
+    FreezeEntityPosition(CurrentVehicle, true)
 end
 
 local removeObjects = function ()
+    CurrentPump = nil
+    if CurrentVehicle then 
+        Entity(CurrentVehicle).state:set('nozzleAttached', false, true)
+        FreezeEntityPosition(CurrentVehicle, false)
+        CurrentVehicle = nil
+    end
     if CurrentObjects.nozzle then
         DeleteEntity(CurrentObjects.nozzle)
         CurrentObjects.nozzle = nil
@@ -63,18 +107,21 @@ local removeObjects = function ()
 end
 
 local refillVehicleFuel = function (liter)
+    if not liter then return end
     if QBCore.PlayerData.money[Config.MoneyType] < liter * Config.FuelPrice then return QBCore.Functions.Notify(Lang:t('error.no_money'), 'error') end
     if not CurrentPump then return end
     local veh, dis = QBCore.Functions.GetClosestVehicle()
-    if not veh or veh == -1 or not DoesEntityExist(veh) then return end
+    if not veh or veh == -1 or not DoesEntityExist(veh) then return QBCore.Functions.Notify(Lang:t('error.no_nozzle'), 'error') end
+    if not Entity(veh).state['nozzleAttached'] then return QBCore.Functions.Notify(Lang:t('error.no_nozzle'), 'error') end
     if dis > 5 then return end
+
+    local success = QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', liter)
+    if not success then return QBCore.Functions.Notify(Lang:t('error.no_money'), 'error') end
 
     local ped = PlayerPedId()
     TaskTurnPedToFaceEntity(ped, veh, 1000)
-    Wait(1000)
-    grabFuelFromPump()
-    QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
-    TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
+    QBCore.Functions.LoadAnimDict('anim@mp_corona_idles@male_d@idle_a')
+    TaskPlayAnim(ped, 'anim@mp_corona_idles@male_d@idle_a', 'idle_a', 2.0, 8.0, -1, 50, 0, false, false, false)
 
     QBCore.Functions.Progressbar('fueling_vehicle', Lang:t('progress.refueling'), Config.RefillTimePerLitre * liter * 1000, false, true, {
         disableMovement = true,
@@ -83,9 +130,6 @@ local refillVehicleFuel = function (liter)
         disableCombat = true,
     }, {}, {}, {}, function()
         removeObjects()
-        local success = QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', liter)
-
-        if not success then return QBCore.Functions.Notify(Lang:t('error.no_money'), 'error') end
         SetFuel(veh, math.floor(GetFuel(veh) or 0) + liter)
         QBCore.Functions.Notify(Lang:t('success.refueled'), 'success')
     end, function()
@@ -93,8 +137,8 @@ local refillVehicleFuel = function (liter)
     end)
 end
 
-local showFuelMenu = function (ent)
-    CurrentPump = ent
+local showFuelMenu = function ()
+    if not CurrentPump then return end
     local veh, dis = QBCore.Functions.GetClosestVehicle()
     if not veh or veh == -1 then return QBCore.Functions.Notify(Lang:t('error.no_vehicle')) end
     if dis > 5 then return QBCore.Functions.Notify(Lang:t('error.no_vehicle')) end
@@ -134,18 +178,30 @@ local setUpTarget = function ()
                 {
                     num = 1,
                     icon = 'fa-solid fa-gas-pump',
-                    label = Lang:t('target.put_fuel'),
-                    action = showFuelMenu
+                    label = Lang:t('target.get_nozzle'),
+                    canInteract = function()
+                        return CurrentObjects.nozzle == nil
+                    end,
+                    action = grabFuelFromPump
                 },
                 {
                     num = 2,
+                    icon = 'fa-solid fa-gas-pump',
+                    label = Lang:t('target.put_fuel'),
+                    canInteract = function()
+                        return CurrentPump ~= nil
+                    end,
+                    action = showFuelMenu
+                },
+                {
+                    num = 3,
                     type = 'server',
                     event = 'qb-fuel:server:buyJerryCan',
                     icon = 'fa-solid fa-jar',
                     label = Lang:t('target.buy_jerrycan', { price = Config.JerryCanCost }),
                 },
                 {
-                    num = 3,
+                    num = 4,
                     type = 'server',
                     event = 'qb-fuel:server:refillJerryCan',
                     icon = 'fa-solid fa-arrows-rotate',
@@ -169,6 +225,26 @@ local setUpTarget = function ()
                 canInteract = function()
                     return GetSelectedPedWeapon(PlayerPedId()) == `WEAPON_PETROLCAN`
                 end
+            },
+            
+            {
+                num = 2,
+                icon = 'fa-solid fa-gas-pump',
+                label = Lang:t('target.nozzle_put'),
+                action = nozzleToVehicle,
+                canInteract = function()
+                    return LocalPlayer.state['hasNozzle']
+                end
+            },
+            
+            {
+                num = 3,
+                icon = 'fa-solid fa-gas-pump',
+                label = Lang:t('target.nozzle_remove'),
+                action = removeObjects,
+                canInteract = function(ent)
+                    return Entity(ent).state['nozzleAttached']
+                end
             }
         },
         distance = 3
@@ -191,6 +267,7 @@ RegisterNuiCallback('close', function (_, cb)
 end)
 
 RegisterNuiCallback('refill', function (data, cb)
+    if not data or not data.liter then return end
     hideFuelMenu()
     refillVehicleFuel(data.liter)
     cb('ok')
