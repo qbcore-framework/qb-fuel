@@ -187,6 +187,15 @@ local setUpTarget = function ()
                 {
                     num = 2,
                     icon = 'fa-solid fa-gas-pump',
+                    label = Lang:t('target.return_nozzle'),
+                    canInteract = function()
+                        return LocalPlayer.state['hasNozzle']
+                    end,
+                    action = removeObjects
+                },
+                {
+                    num = 3,
+                    icon = 'fa-solid fa-gas-pump',
                     label = Lang:t('target.put_fuel'),
                     canInteract = function()
                         return CurrentPump ~= nil
@@ -194,14 +203,14 @@ local setUpTarget = function ()
                     action = showFuelMenu
                 },
                 {
-                    num = 3,
+                    num = 4,
                     type = 'server',
                     event = 'qb-fuel:server:buyJerryCan',
                     icon = 'fa-solid fa-jar',
                     label = Lang:t('target.buy_jerrycan', { price = Config.JerryCanCost }),
                 },
                 {
-                    num = 4,
+                    num = 5,
                     type = 'server',
                     event = 'qb-fuel:server:refillJerryCan',
                     icon = 'fa-solid fa-arrows-rotate',
@@ -226,7 +235,6 @@ local setUpTarget = function ()
                     return GetSelectedPedWeapon(PlayerPedId()) == `WEAPON_PETROLCAN`
                 end
             },
-            
             {
                 num = 2,
                 icon = 'fa-solid fa-gas-pump',
@@ -236,7 +244,6 @@ local setUpTarget = function ()
                     return LocalPlayer.state['hasNozzle']
                 end
             },
-            
             {
                 num = 3,
                 icon = 'fa-solid fa-gas-pump',
