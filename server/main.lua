@@ -10,7 +10,7 @@ QBCore.Functions.CreateCallback('qb-fuel:server:refillVehicle', function (src, c
     if not litres then return end
 
     local finalPrice = litres * Config.FuelPrice
-    if Player.PlayerData.money.cash >= finalPrice then
+    if Player.PlayerData.money[Config.MoneyType] >= finalPrice then
         cb(Player.Functions.RemoveMoney(Config.MoneyType, finalPrice, 'refuel-vehicle'))
     else
         cb(false)
@@ -35,11 +35,12 @@ RegisterServerEvent('qb-fuel:server:refillJerryCan', function ()
     local jerryCan = Player.Functions.GetItemByName('weapon_petrolcan')
     if not jerryCan then return Player.Functions.Notify(Lang:t('error.no_jerrycan'), 'error') end
 
-    Player.Functions.RemoveMoney(Config.MoneyType, Config.JerryCanRefillCost, 'refill-jerry-can')
-    jerryCan.info.fuel = Config.JerryCanLitre
-    jerryCan.info.ammo = Config.JerryCanLitre
-    Player.Functions.RemoveItem('weapon_petrolcan', 1, jerryCan.slot)
-    Player.Functions.AddItem('weapon_petrolcan', 1, nil, jerryCan.info)
+    if Player.Functions.RemoveMoney(Config.MoneyType, Config.JerryCanRefillCost, 'refill-jerry-can') then
+        jerryCan.info.fuel = Config.JerryCanLitre
+        jerryCan.info.ammo = Config.JerryCanLitre
+        Player.Functions.RemoveItem('weapon_petrolcan', 1, jerryCan.slot)
+        Player.Functions.AddItem('weapon_petrolcan', 1, nil, jerryCan.info)
+    end
 end)
 
 RegisterServerEvent('qb-fuel:server:setCanFuel', function (fuel)
