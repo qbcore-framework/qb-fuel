@@ -21,7 +21,8 @@ local Translations = {
         refill_jerrycan = 'Refill Jerry Can $%{price}',
         refill_fuel = 'Refill Fuel',
         nozzle_put = 'Attach Nozzle',
-        nozzle_remove = 'Remove Nozzle'
+        nozzle_remove = 'Remove Nozzle',
+        return_nozzle = 'Return Nozzle',
     }
 }
 

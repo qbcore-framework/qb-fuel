@@ -22,6 +22,7 @@ local Translations = {
         refill_fuel = 'Rellenar Gasolina',
         nozzle_put = 'Poner boquilla',
         nozzle_remove = 'Quitar boquilla',
+        return_nozzle = 'Devolver boquilla',
     }
 }
 
