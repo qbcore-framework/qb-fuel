@@ -81,7 +81,6 @@ end
 local nozzleToVehicle = function (veh)
     DetachEntity(CurrentObjects.nozzle, false, true)
     LocalPlayer.state:set('hasNozzle', false, true)
-    print(getIdealNozzlePosition(veh))
     AttachEntityToEntity(CurrentObjects.nozzle, veh, getIdealNozzlePosition(veh), 0.1, -1.5, 0.3, -60.0, 0.0, 90.0, true, true, false, false, 1, true)
     Entity(veh).state:set('nozzleAttached', true, true)
     CurrentVehicle = veh
@@ -119,6 +118,10 @@ local refillVehicleFuel = function (liter)
     TaskTurnPedToFaceEntity(ped, veh, 1000)
 
     TaskGoStraightToCoordRelativeToEntity(ped, CurrentObjects.nozzle, 0.0, 0.0, 0.0, 1.0, 1000)
+    Wait(1500)
+
+    QBCore.Functions.LookAtEntity(veh, 5000, 5.0)
+    Wait(500)
 
     QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
     TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
