@@ -115,13 +115,13 @@ local refillVehicleFuel = function (liter)
     if not Entity(veh).state['nozzleAttached'] then return QBCore.Functions.Notify(Lang:t('error.no_nozzle'), 'error') end
     if dis > 5 then return end
 
-    local success = QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', liter)
-    if not success then return QBCore.Functions.Notify(Lang:t('error.no_money'), 'error') end
-
     local ped = PlayerPedId()
     TaskTurnPedToFaceEntity(ped, veh, 1000)
-    QBCore.Functions.LoadAnimDict('anim@mp_corona_idles@male_d@idle_a')
-    TaskPlayAnim(ped, 'anim@mp_corona_idles@male_d@idle_a', 'idle_a', 2.0, 8.0, -1, 50, 0, false, false, false)
+
+    TaskGoStraightToCoordRelativeToEntity(ped, CurrentObjects.nozzle, 0.0, 0.0, 0.0, 1.0, 1000)
+
+    QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
+    TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
 
     QBCore.Functions.Progressbar('fueling_vehicle', Lang:t('progress.refueling'), Config.RefillTimePerLitre * liter * 1000, false, true, {
         disableMovement = true,
@@ -129,6 +129,8 @@ local refillVehicleFuel = function (liter)
         disableMouse = false,
         disableCombat = true,
     }, {}, {}, {}, function()
+        local success = QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', liter)
+        if not success then return QBCore.Functions.Notify(Lang:t('error.no_money'), 'error') end
         removeObjects()
         SetFuel(veh, math.floor(GetFuel(veh) or 0) + liter)
         QBCore.Functions.Notify(Lang:t('success.refueled'), 'success')
