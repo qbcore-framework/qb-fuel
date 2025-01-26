@@ -2,7 +2,7 @@ fx_version "cerulean"
 game "gta5"
 
 author "Cocodrulo"
-version "0.0.2"
+version "0.0.3"
 description "A siple Fuel System for FiveM"
 
 ui_page "html/index.html"
@@ -28,5 +28,7 @@ files {
     "html/translations.js",
     "html/style.css"
 }
+
+dependency 'qb-target'
 
 provide 'LegacyFuel'
