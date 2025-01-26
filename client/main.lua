@@ -292,10 +292,19 @@ AddEventHandler('onResourceStop', function (res)
     removeObjects()
 end)
 
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    removeObjects()
+end)
+
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(pData)
     QBCore.PlayerData = pData
 end)
 
 -- ====================|| INITIALIZATION || ==================== --
 
-init()
+CreateThread(function()
+    Wait(500) -- Wait for QBCore to load
+    if LocalPlayer.state.isLoggedIn then
+        init()
+    end
+end)
