@@ -5,6 +5,8 @@ CurrentPump = nil
 CurrentObjects = { nozzle = nil, rope = nil }
 CurrentVehicle = nil
 NozzleBones = { { bone = 'door_dside_r', ped = 'left' }, { bone = 'door_pside_r', ped = 'right' }, { bone = 'door_dside_f', ped = 'left' }, { bone = 'door_pside_f', ped = 'right' },  { bone = 'bonnet' },  { bone = 'boot' } }
+Blips = {}
+
 -- ====================|| FUNCTIONS || ==================== --
 
 local refuelVehicle = function (veh)
@@ -173,6 +175,13 @@ local displayBlips = function ()
         BeginTextCommandSetBlipName('STRING')
         AddTextComponentString(Config.Blip.Text)
         EndTextCommandSetBlipName(blip)
+        Blips[#Blips + 1] = blip
+    end
+end
+
+local deloadBlips = function ()
+    for _, blip in ipairs(Blips) do
+        RemoveBlip(blip)
     end
 end
 
@@ -290,10 +299,12 @@ end)
 AddEventHandler('onResourceStop', function (res)
     if GetCurrentResourceName() ~= res then return end
     removeObjects()
+    deloadBlips()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
     removeObjects()
+    deloadBlips()
 end)
 
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(pData)
@@ -301,6 +312,10 @@ RegisterNetEvent('QBCore:Player:SetPlayerData', function(pData)
 end)
 
 -- ====================|| INITIALIZATION || ==================== --
+
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    init()
+end)
 
 CreateThread(function()
     Wait(500) -- Wait for QBCore to load
