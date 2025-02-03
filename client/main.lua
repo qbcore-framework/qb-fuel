@@ -105,6 +105,7 @@ local removeObjects = function ()
         RopeUnloadTextures()
         CurrentObjects.rope = nil
     end
+    LocalPlayer.state:set('hasNozzle', false, true)
 end
 
 local refillVehicleFuel = function (liter)
