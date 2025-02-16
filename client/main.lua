@@ -9,9 +9,30 @@ Blips = {}
 
 -- ====================|| FUNCTIONS || ==================== --
 
+local removeObjects = function ()
+    CurrentPump = nil
+    if CurrentVehicle then 
+        Entity(CurrentVehicle).state:set('nozzleAttached', false, true)
+        FreezeEntityPosition(CurrentVehicle, false)
+        CurrentVehicle = nil
+    end
+    if CurrentObjects.nozzle then
+        DeleteEntity(CurrentObjects.nozzle)
+        CurrentObjects.nozzle = nil
+        ClearPedTasks(PlayerPedId())
+    end
+    if CurrentObjects.rope then
+        DeleteRope(CurrentObjects.rope)
+        RopeUnloadTextures()
+        CurrentObjects.rope = nil
+    end
+    LocalPlayer.state:set('hasNozzle', false, true)
+end
+
 local refuelVehicle = function (veh)
     if not veh or not DoesEntityExist(veh) then return QBCore.Functions.Notify(Lang:t('error.no_vehicle')) end
     local ped = PlayerPedId()
+    ClearPedTasks(ped)
     local canLiter = GetAmmoInPedWeapon(ped, `WEAPON_PETROLCAN`)
     local vehFuel = math.floor(GetFuel(veh) or 0)
     if canLiter == 0 then return QBCore.Functions.Notify(Lang:t('error.no_fuel_can'), 'error') end
@@ -49,20 +70,53 @@ local grabFuelFromPump = function(ent)
     while not RopeAreTexturesLoaded() do
         Wait(0)
     end
-    CurrentObjects.rope = AddRope(pump.x, pump.y, pump.z, 0.0, 0.0, 0.0, 3.0, 1, 1000.0, 0.0, 1.0, false, false, false, 1.0, true)
+    CurrentObjects.rope = AddRope(pump.x, pump.y, pump.z - 1.0, 0.0, 0.0, 0.0, 3.0, 3, 50.0, 1.0, 1.0, false, false, false, 0.0, true)
     ActivatePhysics(CurrentObjects.rope)
     Wait(50)
     local nozzlePos = GetOffsetFromEntityInWorldCoords(CurrentObjects.nozzle, 0.0, -0.033, -0.195)
-    AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y, nozzlePos.z, 5.0, false, false, '', '')
+    AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y + 0.02, nozzlePos.z   , 5.0, false, false, '', '')
     LocalPlayer.state:set('hasNozzle', true, true)
+    
+    CreateThread(function()
+        while DoesRopeExist(CurrentObjects.rope) do
+            Wait(500)
+            if RopeGetDistanceBetweenEnds(CurrentObjects.rope) > 8.0 then
+                QBCore.Functions.Notify(Lang:t('error.too_far'), 'error')
+                removeObjects()
+                break
+            end
+        end
+    end)
 end
 
 local getPedCurrentSide = function (veh)
     local ped = PlayerPedId()
-    local pedPos = GetEntityCoords(ped)
+    local pedPos = (CurrentPump and DoesEntityExist(CurrentPump)) and GetEntityCoords(CurrentPump) or GetEntityCoords(ped)
     local vehPos = GetEntityCoords(veh)
-    local pedSide = pedPos.x > vehPos.x and 'right' or 'left'
-    return pedSide
+    local vehHeading = GetEntityHeading(veh)
+    
+    local toPlayer = {
+        x = pedPos.x - vehPos.x,
+        z = pedPos.z - vehPos.z
+    }
+
+    local headingRadians = math.rad(vehHeading)
+
+    local forward = {
+        x = math.sin(headingRadians),
+        z = math.cos(headingRadians)
+    }
+
+    local cross_y = (forward.x * toPlayer.z) - (forward.z * toPlayer.x)
+
+    local THRESHOLD = 0.1
+
+    if cross_y > THRESHOLD then
+        return "left"
+    elseif cross_y < -THRESHOLD then
+        return "right"
+    end
+    return "left"
 end
 
 local getIdealNozzlePosition = function (veh)
@@ -83,29 +137,11 @@ end
 local nozzleToVehicle = function (veh)
     DetachEntity(CurrentObjects.nozzle, false, true)
     LocalPlayer.state:set('hasNozzle', false, true)
-    AttachEntityToEntity(CurrentObjects.nozzle, veh, getIdealNozzlePosition(veh), 0.1, -1.5, 0.3, -60.0, 0.0, 90.0, true, true, false, false, 1, true)
+    local yRot = getPedCurrentSide(veh) == 'left' and 180.0 or 0.0
+    AttachEntityToEntity(CurrentObjects.nozzle, veh, getIdealNozzlePosition(veh), 0.1, -1.5, 0.3, -60.0, yRot + 0.0, 90.0, true, true, false, false, 1, true)
     Entity(veh).state:set('nozzleAttached', true, true)
     CurrentVehicle = veh
     FreezeEntityPosition(CurrentVehicle, true)
-end
-
-local removeObjects = function ()
-    CurrentPump = nil
-    if CurrentVehicle then 
-        Entity(CurrentVehicle).state:set('nozzleAttached', false, true)
-        FreezeEntityPosition(CurrentVehicle, false)
-        CurrentVehicle = nil
-    end
-    if CurrentObjects.nozzle then
-        DeleteEntity(CurrentObjects.nozzle)
-        CurrentObjects.nozzle = nil
-    end
-    if CurrentObjects.rope then
-        DeleteRope(CurrentObjects.rope)
-        RopeUnloadTextures()
-        CurrentObjects.rope = nil
-    end
-    LocalPlayer.state:set('hasNozzle', false, true)
 end
 
 local refillVehicleFuel = function (liter)
@@ -118,6 +154,7 @@ local refillVehicleFuel = function (liter)
     if dis > 5 then return end
 
     local ped = PlayerPedId()
+    ClearPedTasks(ped)
     TaskTurnPedToFaceEntity(ped, veh, 1000)
 
     TaskGoStraightToCoordRelativeToEntity(ped, CurrentObjects.nozzle, 0.0, 0.0, 0.0, 1.0, 1000)
@@ -140,6 +177,7 @@ local refillVehicleFuel = function (liter)
         removeObjects()
         SetFuel(veh, math.floor(GetFuel(veh) or 0) + liter)
         QBCore.Functions.Notify(Lang:t('success.refueled'), 'success')
+        ClearPedTasks(ped)
     end, function()
         removeObjects()
     end)
