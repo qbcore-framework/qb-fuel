@@ -13,6 +13,7 @@ local Translations = {
         vehicle_full = 'El vehículo ya está lleno de gasolina',
         no_fuel_can = 'No tienes gasolina en el bidón',
         no_nozzle = 'No hay ningún vehículo con la boquilla puesta cerca',
+        too_far = 'Estás demasiado lejos de la bomba, la boquilla ha sido devuelta',
     },
     target = {
         put_fuel = 'Echar gasolina',

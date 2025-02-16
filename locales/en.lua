@@ -13,6 +13,7 @@ local Translations = {
         vehicle_full = 'The vehicle is already full of fuel',
         no_fuel_can = 'You do not have fuel in the jerry can',
         no_nozzle = 'There is no vehicle with the nozzle attached nearby',
+        too_far = 'You are too far from the pump, the nozzle has been returned',
     },
     target = {
         put_fuel = 'Put fuel',
