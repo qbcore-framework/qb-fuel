@@ -70,11 +70,11 @@ local grabFuelFromPump = function(ent)
     while not RopeAreTexturesLoaded() do
         Wait(0)
     end
-    CurrentObjects.rope = AddRope(pump.x, pump.y, pump.z - 1.0, 0.0, 0.0, 0.0, 3.0, 3, 50.0, 1.0, 1.0, false, false, false, 0.0, true)
+    CurrentObjects.rope = AddRope(pump.x, pump.y, pump.z - 1.0, 0.0, 0.0, 0.0, 3.0, 3, 1000.0, 0.0, 1.0, false, false, false, 1.0, true)
     ActivatePhysics(CurrentObjects.rope)
     Wait(50)
     local nozzlePos = GetOffsetFromEntityInWorldCoords(CurrentObjects.nozzle, 0.0, -0.033, -0.195)
-    AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y + 0.02, nozzlePos.z   , 5.0, false, false, '', '')
+    AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y + 0.02, nozzlePos.z, 5.0, false, false, '', '')
     LocalPlayer.state:set('hasNozzle', true, true)
     
     CreateThread(function()
@@ -137,8 +137,21 @@ end
 local nozzleToVehicle = function (veh)
     DetachEntity(CurrentObjects.nozzle, false, true)
     LocalPlayer.state:set('hasNozzle', false, true)
-    local yRot = getPedCurrentSide(veh) == 'left' and 180.0 or 0.0
-    AttachEntityToEntity(CurrentObjects.nozzle, veh, getIdealNozzlePosition(veh), 0.1, -1.5, 0.3, -60.0, yRot + 0.0, 90.0, true, true, false, false, 1, true)
+    local side = getPedCurrentSide(veh)
+    local yRot = side == 'left' and 180.0 or 0.0
+    local xRot = side == 'left' and 130.0 or -60.0
+    local zRot = side == 'left' and -90.0 or 90.0
+    local xPos = side == 'left' and  -0.1 or 0.1
+    local zPos = side == 'left' and  0.2 or -0.4
+    local pos = getIdealNozzlePosition(veh)
+    if pos ~= -1 then
+        AttachEntityToEntity(CurrentObjects.nozzle, veh, pos, xPos, -1.5, zPos, xRot, yRot, zRot, false, false, false, false, 1, true)
+    else
+        xRot = side == 'left' and 110.0 or -60.0
+        zPos = 0.45
+        xPos = side == 'left' and  -0.1 or 0.2
+        AttachEntityToEntity(CurrentObjects.nozzle, veh, -1, xPos, -0.5, zPos, xRot, yRot, zRot, false, false, false, false, 1, true)
+    end
     Entity(veh).state:set('nozzleAttached', true, true)
     CurrentVehicle = veh
     FreezeEntityPosition(CurrentVehicle, true)
