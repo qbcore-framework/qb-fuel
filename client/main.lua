@@ -4,7 +4,6 @@ QBCore = exports['qb-core']:GetCoreObject()
 CurrentPump = nil
 CurrentObjects = { nozzle = nil, rope = nil }
 CurrentVehicle = nil
-NozzleBones = { { bone = 'door_dside_r', ped = 'left' }, { bone = 'door_pside_r', ped = 'right' }, { bone = 'door_dside_f', ped = 'left' }, { bone = 'door_pside_f', ped = 'right' },  { bone = 'bonnet' },  { bone = 'boot' } }
 Blips = {}
 
 -- ====================|| FUNCTIONS || ==================== --
@@ -31,12 +30,15 @@ end
 
 local refuelVehicle = function (veh)
     if not veh or not DoesEntityExist(veh) then return QBCore.Functions.Notify(Lang:t('error.no_vehicle')) end
+
     local ped = PlayerPedId()
     ClearPedTasks(ped)
     local canLiter = GetAmmoInPedWeapon(ped, `WEAPON_PETROLCAN`)
     local vehFuel = math.floor(GetFuel(veh) or 0)
+
     if canLiter == 0 then return QBCore.Functions.Notify(Lang:t('error.no_fuel_can'), 'error') end
     if vehFuel == 100 then return QBCore.Functions.Notify(Lang:t('error.vehicle_full'), 'error') end
+
     local liter = canLiter + vehFuel > 100 and 100 - vehFuel or canLiter
 
     QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
@@ -59,24 +61,29 @@ end
 local grabFuelFromPump = function(ent)
     CurrentPump = ent
     if not CurrentPump then return end
+
 	local ped = PlayerPedId()
 	local pump = GetEntityCoords(CurrentPump)
     QBCore.Functions.LoadAnimDict('anim@am_hold_up@male')
     TaskPlayAnim(ped, 'anim@am_hold_up@male', 'shoplift_high', 2.0, 8.0, -1, 50, 0, false, false, false)
     Wait(300)
+
     CurrentObjects.nozzle = CreateObject('prop_cs_fuel_nozle', 0, 0, 0, true, true, true)
+
     AttachEntityToEntity(CurrentObjects.nozzle, ped, GetPedBoneIndex(ped, 0x49D9), 0.11, 0.02, 0.02, -80.0, -90.0, 15.0, true, true, false, true, 1, true)
     RopeLoadTextures()
     while not RopeAreTexturesLoaded() do
         Wait(0)
     end
-    CurrentObjects.rope = AddRope(pump.x, pump.y, pump.z - 1.0, 0.0, 0.0, 0.0, 3.0, 3, 1000.0, 0.0, 1.0, false, false, false, 1.0, true)
+
+    CurrentObjects.rope = AddRope(pump.x, pump.y, pump.z - 1.0, 0.0, 0.0, 0.0, 3.5, 3, 2000.0, 0.0, 2.0, false, false, false, 1.0, true)
     ActivatePhysics(CurrentObjects.rope)
     Wait(50)
+
     local nozzlePos = GetOffsetFromEntityInWorldCoords(CurrentObjects.nozzle, 0.0, -0.033, -0.195)
     AttachEntitiesToRope(CurrentObjects.rope, CurrentPump, CurrentObjects.nozzle, pump.x, pump.y, pump.z + 1.45, nozzlePos.x, nozzlePos.y + 0.02, nozzlePos.z, 5.0, false, false, '', '')
     LocalPlayer.state:set('hasNozzle', true, true)
-    
+
     CreateThread(function()
         while DoesRopeExist(CurrentObjects.rope) do
             Wait(500)
@@ -89,71 +96,95 @@ local grabFuelFromPump = function(ent)
     end)
 end
 
-local getPedCurrentSide = function (veh)
-    local ped = PlayerPedId()
-    local pedPos = (CurrentPump and DoesEntityExist(CurrentPump)) and GetEntityCoords(CurrentPump) or GetEntityCoords(ped)
-    local vehPos = GetEntityCoords(veh)
-    local vehHeading = GetEntityHeading(veh)
-    
-    local toPlayer = {
-        x = pedPos.x - vehPos.x,
-        z = pedPos.z - vehPos.z
-    }
+local getPedCurrentSide = function(veh)
+    local pump = CurrentPump
+    if not pump or not DoesEntityExist(pump) then return end
 
-    local headingRadians = math.rad(vehHeading)
+    local pumpPos = GetEntityCoords(pump)
+    local vehPos = GetEntityCoords(veh)
+    local vehHeading = math.rad(GetEntityHeading(veh))
+
+    local toPump = {
+        x = pumpPos.x - vehPos.x,
+        y = pumpPos.y - vehPos.y
+    }
 
     local forward = {
-        x = math.sin(headingRadians),
-        z = math.cos(headingRadians)
+        x = math.sin(vehHeading),
+        y = math.cos(vehHeading)
     }
 
-    local cross_y = (forward.x * toPlayer.z) - (forward.z * toPlayer.x)
+    local crossZ = forward.x * toPump.y - forward.y * toPump.x
 
     local THRESHOLD = 0.1
 
-    if cross_y > THRESHOLD then
+    if crossZ > THRESHOLD then
         return "left"
-    elseif cross_y < -THRESHOLD then
+    elseif crossZ < -THRESHOLD then
         return "right"
     end
     return "left"
 end
 
-local getIdealNozzlePosition = function (veh)
+local nozzleToVehicle = function (veh)
     local pedSide = getPedCurrentSide(veh)
-    for _, v in pairs(NozzleBones) do
-        local boneIndex = GetEntityBoneIndexByName(veh, v.bone)
-        if boneIndex ~= -1 then
-            if v.ped and v.ped == pedSide then
-                return boneIndex, v.bone
-            elseif not v.ped then
-                return boneIndex, v.bone
-            end
+    if pedSide ~= 'left' then return QBCore.Functions.Notify(Lang:t('error.wrong_side'), 'error') end
+
+    local isBike = false
+    local nozzleModifiedPosition = {
+        x = 0.0,
+        y = 0.0,
+        z = 0.0
+    }
+    local tankBone = -1
+    local vehClass = GetVehicleClass(veh)
+
+    if vehClass == 8 then
+        tankBone = GetEntityBoneIndexByName(veh, "petrolcap")
+        if tankBone == -1 then
+            tankBone = GetEntityBoneIndexByName(veh, "petroltank")
+        end
+        if tankBone == -1 then
+            tankBone = GetEntityBoneIndexByName(veh, "engine")
+        end
+        isBike = true
+    elseif vehClass ~= 13 then
+        tankBone = GetEntityBoneIndexByName(veh, "petrolcap")
+        if tankBone == -1 then
+            tankBone = GetEntityBoneIndexByName(veh, "petroltank_l")
+        end
+        if tankBone == -1 then
+            tankBone = GetEntityBoneIndexByName(veh, "hub_lr")
+        end
+        if tankBone == -1 then
+            tankBone = GetEntityBoneIndexByName(veh, "handle_dside_r")
+            nozzleModifiedPosition.x = 0.1
+            nozzleModifiedPosition.y = -0.5
+            nozzleModifiedPosition.z = -0.6
         end
     end
-    return -1
-end
 
-local nozzleToVehicle = function (veh)
+    local wheelPos = GetWorldPositionOfEntityBone(veh, GetEntityBoneIndexByName(veh, "wheel_lr"))
+    local wheelRPos = GetOffsetFromEntityGivenWorldCoords(veh, wheelPos.x, wheelPos.y, wheelPos.z)
+
     DetachEntity(CurrentObjects.nozzle, false, true)
+    local dimMin, dimMax = GetModelDimensions(GetEntityModel(veh))
+
+    local diff = dimMax.z - wheelRPos.z
+    local zCoords = diff / 2.28
+
     LocalPlayer.state:set('hasNozzle', false, true)
-    local side = getPedCurrentSide(veh)
-    local yRot = side == 'left' and 180.0 or 0.0
-    local xRot = side == 'left' and 130.0 or -60.0
-    local zRot = side == 'left' and -90.0 or 90.0
-    local xPos = side == 'left' and  -0.1 or 0.1
-    local zPos = side == 'left' and  0.2 or -0.4
-    local pos = getIdealNozzlePosition(veh)
-    if pos ~= -1 then
-        AttachEntityToEntity(CurrentObjects.nozzle, veh, pos, xPos, -1.5, zPos, xRot, yRot, zRot, false, false, false, false, 1, true)
+    local ped = PlayerPedId()
+
+    if isBike then
+        AttachEntityToEntity(CurrentObjects.nozzle, veh, tankBone, 0.0 + nozzleModifiedPosition.x, -0.2 + nozzleModifiedPosition.y, 0.2 + nozzleModifiedPosition.z, -80.0, 0.0, 0.0, true, true, false, false, 1, true)
     else
-        xRot = side == 'left' and 110.0 or -60.0
-        zPos = 0.45
-        xPos = side == 'left' and  -0.1 or 0.2
-        AttachEntityToEntity(CurrentObjects.nozzle, veh, -1, xPos, -0.5, zPos, xRot, yRot, zRot, false, false, false, false, 1, true)
+        AttachEntityToEntity(CurrentObjects.nozzle, veh, tankBone, -0.18 + nozzleModifiedPosition.x, 0.0 + nozzleModifiedPosition.y, zCoords, -125.0, -90.0, -90.0, true, true, false, false, 1, true)
     end
+
     Entity(veh).state:set('nozzleAttached', true, true)
     CurrentVehicle = veh
+    FreezeEntityPosition(CurrentObjects.nozzle, true)
     FreezeEntityPosition(CurrentVehicle, true)
 end
 
