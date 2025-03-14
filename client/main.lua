@@ -96,39 +96,30 @@ local grabFuelFromPump = function(ent)
     end)
 end
 
-local getPedCurrentSide = function(veh)
+local getVehicleCurrentSide = function(veh)
     local pump = CurrentPump
     if not pump or not DoesEntityExist(pump) then return end
 
     local pumpPos = GetEntityCoords(pump)
     local vehPos = GetEntityCoords(veh)
-    local vehHeading = math.rad(GetEntityHeading(veh))
+    local vehForward = GetEntityForwardVector(veh)
 
     local toPump = {
         x = pumpPos.x - vehPos.x,
         y = pumpPos.y - vehPos.y
     }
 
-    local forward = {
-        x = math.sin(vehHeading),
-        y = math.cos(vehHeading)
-    }
+    local crossZ = vehForward.x * toPump.y - vehForward.y * toPump.x
 
-    local crossZ = forward.x * toPump.y - forward.y * toPump.x
-
-    local THRESHOLD = 0.1
-
-    if crossZ > THRESHOLD then
+    if crossZ > 0 then
         return "left"
-    elseif crossZ < -THRESHOLD then
+    else
         return "right"
     end
-    return "left"
 end
 
 local nozzleToVehicle = function (veh)
-    local pedSide = getPedCurrentSide(veh)
-    if pedSide ~= 'left' then return QBCore.Functions.Notify(Lang:t('error.wrong_side'), 'error') end
+    if getVehicleCurrentSide(veh) ~= 'left' then return QBCore.Functions.Notify(Lang:t('error.wrong_side'), 'error') end
 
     local isBike = false
     local nozzleModifiedPosition = {
