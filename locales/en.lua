@@ -14,6 +14,7 @@ local Translations = {
         no_fuel_can = 'You do not have fuel in the jerry can',
         no_nozzle = 'There is no vehicle with the nozzle attached nearby',
         too_far = 'You are too far from the pump, the nozzle has been returned',
+        wrong_side = 'The vehicle tank is on the other side',
     },
     target = {
         put_fuel = 'Put fuel',
