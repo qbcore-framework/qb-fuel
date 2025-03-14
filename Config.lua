@@ -3,7 +3,7 @@ Config = Config or {}
 -- Global Fuel Consumption Multiplier. The fuel consumption of each vehicle is set in the handling
 -- file of the vehicle, in the game or in you addon vehicles. The formula (provided by the game) is: 
 -- time_step * revolutions_per_minute * vehicle_fuel_consumption_multiplier * global_fuel_consumption_multiplier
-Config.GlobalFuelConsumptionMultiplier = 3.5 -- GTAV Default: 1.0
+Config.GlobalFuelConsumptionMultiplier = 4.5 -- GTAV Default: 1.0
 
 Config.MoneyType = 'cash'       -- Money type to use for the fuel transactions
 Config.FuelPrice = 5            -- Price of the fuel per litre
