@@ -162,7 +162,9 @@ local nozzleToVehicle = function (veh)
     local dimMin, dimMax = GetModelDimensions(GetEntityModel(veh))
 
     local diff = dimMax.z - wheelRPos.z
-    local zCoords = diff / 2.28
+
+    local divisor = (dimMax - dimMin).z < 1.4 and (1.87 * (dimMax - dimMin).z) / 1.24 or (2.7 * (dimMax - dimMin).z) / 2.3
+    local zCoords = diff / divisor
 
     LocalPlayer.state:set('hasNozzle', false, true)
     local ped = PlayerPedId()
