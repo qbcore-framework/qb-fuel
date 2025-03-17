@@ -8,6 +8,14 @@ Blips = {}
 
 -- ====================|| FUNCTIONS || ==================== --
 
+local loadAnimDict = function (dict)
+    if not DoesAnimDictExist(dict) then return end
+    while not HasAnimDictLoaded(dict) do
+        RequestAnimDict(dict)
+        Wait(20)
+    end
+end
+
 local removeObjects = function ()
     CurrentPump = nil
     if CurrentVehicle then 
@@ -41,7 +49,7 @@ local refuelVehicle = function (veh)
 
     local liter = canLiter + vehFuel > 100 and 100 - vehFuel or canLiter
 
-    QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
+    loadAnimDict('timetable@gardener@filling_can')
     TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
 
     QBCore.Functions.Progressbar('fueling_vehicle', Lang:t('progress.refueling'), Config.RefillTimePerLitre * liter * 1000, false, true, {
@@ -64,7 +72,7 @@ local grabFuelFromPump = function(ent)
 
 	local ped = PlayerPedId()
 	local pump = GetEntityCoords(CurrentPump)
-    QBCore.Functions.LoadAnimDict('anim@am_hold_up@male')
+    loadAnimDict('anim@am_hold_up@male')
     TaskPlayAnim(ped, 'anim@am_hold_up@male', 'shoplift_high', 2.0, 8.0, -1, 50, 0, false, false, false)
     Wait(300)
 
@@ -200,7 +208,7 @@ local refillVehicleFuel = function (liter)
     QBCore.Functions.LookAtEntity(veh, 5000, 5.0)
     Wait(500)
 
-    QBCore.Functions.LoadAnimDict('timetable@gardener@filling_can')
+    loadAnimDict('timetable@gardener@filling_can')
     TaskPlayAnim(ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 2.0, 8.0, -1, 50, 0, false, false, false)
 
     QBCore.Functions.Progressbar('fueling_vehicle', Lang:t('progress.refueling'), Config.RefillTimePerLitre * liter * 1000, false, true, {
