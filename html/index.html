@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="style.css" />
+        <script type="module" src="translations.js"></script>
+        <script type="module" src="app.js"></script>
+        <title>QBCore Fuel</title>
+    </head>
+    <body>
+        <main>
+            <h1 data-translations="fuel"></h1>
+            <span data-translations="vehicle_fuel">
+                <span id="capacity"></span>
+            </span>
+            <section>
+                <div
+                    class="progress"
+                    data-value="0"
+                    data-max="100"
+                    data-min="0"
+                >
+                    <div></div>
+                </div>
+                <form>
+                    <div>
+                        <label for="liter" data-translations="liters"></label>
+                        <input
+                            min="0"
+                            max="50"
+                            type="number"
+                            id="liter"
+                            name="liter"
+                            value="0"
+                        />
+                    </div>
+                    <div>
+                        <label for="price" data-translations="price"></label>
+                        <input
+                            min="0"
+                            type="number"
+                            id="price"
+                            name="price"
+                            value="0"
+                        />
+                    </div>
+                    <button data-translations="refill"></button>
+                </form>
+            </section>
+        </main>
+    </body>
+</html>
