@@ -5,6 +5,7 @@ Config = Config or {}
 -- time_step * revolutions_per_minute * vehicle_fuel_consumption_multiplier * global_fuel_consumption_multiplier
 Config.GlobalFuelConsumptionMultiplier = 4.5 -- GTAV Default: 1.0
 Config.SyncFuelBetweenPlayers = true         -- Sync fuel between players
+Config.FuelSyncTime = 10                     -- Time between syncs in seconds
 
 Config.MoneyType = 'cash'       -- Money type to use for the fuel transactions
 Config.FuelPrice = 5            -- Price of the fuel per litre
