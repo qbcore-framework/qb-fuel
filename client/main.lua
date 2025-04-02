@@ -1,10 +1,10 @@
 -- ====================|| VARIABLES || ==================== --
 
-QBCore = exports['qb-core']:GetCoreObject()
-CurrentPump = nil
-CurrentObjects = { nozzle = nil, rope = nil }
-CurrentVehicle = nil
-Blips = {}
+local QBCore = exports['qb-core']:GetCoreObject()
+local CurrentPump = nil
+local CurrentObjects = { nozzle = nil, rope = nil }
+local CurrentVehicle = nil
+local Blips = {}
 
 -- ====================|| FUNCTIONS || ==================== --
 
@@ -42,7 +42,7 @@ local refuelVehicle = function (veh)
     local ped = PlayerPedId()
     ClearPedTasks(ped)
     local canLiter = GetAmmoInPedWeapon(ped, `WEAPON_PETROLCAN`)
-    local vehFuel = math.floor(GetFuel(veh) or 0)
+    local vehFuel = math.floor(exports['qb-fuel']:GetFuel(veh) or 0)
 
     if canLiter == 0 then return QBCore.Functions.Notify(Lang:t('error.no_fuel_can'), 'error') end
     if vehFuel == 100 then return QBCore.Functions.Notify(Lang:t('error.vehicle_full'), 'error') end
@@ -60,7 +60,7 @@ local refuelVehicle = function (veh)
     }, {}, {}, {}, function()
         TriggerServerEvent('qb-fuel:server:setCanFuel', canLiter - liter)
         SetPedAmmo(ped, `WEAPON_PETROLCAN`, canLiter - liter)
-        SetFuel(veh, vehFuel + liter)
+        exports['qb-fuel']:SetFuel(veh, vehFuel + liter)
         QBCore.Functions.Notify(Lang:t('success.refueled'), 'success')
         ClearPedTasks(ped)
     end, function() end)
@@ -97,10 +97,11 @@ local grabFuelFromPump = function(ent)
             Wait(500)
             if RopeGetDistanceBetweenEnds(CurrentObjects.rope) > 8.0 then
                 QBCore.Functions.Notify(Lang:t('error.too_far'), 'error')
-                removeObjects()
                 break
             end
         end
+
+        removeObjects()
     end)
 end
 
@@ -220,7 +221,7 @@ local refillVehicleFuel = function (liter)
         local success = QBCore.Functions.TriggerCallback('qb-fuel:server:refillVehicle', liter)
         if not success then return QBCore.Functions.Notify(Lang:t('error.no_money'), 'error') end
         removeObjects()
-        SetFuel(veh, math.floor(GetFuel(veh) or 0) + liter)
+        exports['qb-fuel']:SetFuel(veh, math.floor(exports['qb-fuel']:GetFuel(veh) or 0) + liter)
         QBCore.Functions.Notify(Lang:t('success.refueled'), 'success')
         ClearPedTasks(ped)
     end, function()
@@ -236,7 +237,7 @@ local showFuelMenu = function ()
     SendNUIMessage({
         action = 'show',
         price = Config.FuelPrice,
-        currentFuel = math.floor(GetFuel(veh) or 0),
+        currentFuel = math.floor(exports['qb-fuel']:GetFuel(veh) or 0),
     })
     SetNuiFocus(true, true)
 end
