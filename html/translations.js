@@ -13,4 +13,11 @@ export const TRANSLATIONS = {
         price: "Precio: $",
         refill: "Recargar",
     },
+    nl: {
+        fuel: "Brandstof",
+        vehicle_fuel: "Je voertuig heeft %{capacity} liter brandstof.",
+        liters: "Liters: ",
+        price: "Prijs: $",
+        refill: "Bijvullen",
+    },
 };
