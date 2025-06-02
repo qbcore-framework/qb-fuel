@@ -363,6 +363,11 @@ local init = function ()
 
     displayBlips()
     setUpTarget()
+
+    SendNUIMessage({
+        action = 'setLanguage',
+        language = GetConvar('qb_locale', 'en')
+    })
 end
 
 -- ====================|| NUI CALLBACKS || ==================== --
