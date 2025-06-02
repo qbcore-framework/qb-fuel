@@ -40,12 +40,14 @@ if Config.SyncFuelBetweenPlayers then
         local playerPed = PlayerPedId()
         if player ~= 128 or GetPedInVehicleSeat(vehicle, -1) ~= playerPed then return end
 
-        while DoesEntityExist(vehicle) and GetPedInVehicleSeat(vehicle, -1) == playerPed do
-            if IsVehicleEngineOn(vehicle) then
-                Entity(vehicle).state:set('qb-fuel', GetVehicleFuelLevel(vehicle) + 0.0, true)
-            end
-            Wait(Config.FuelSyncTime*1000)
-        end
+        CreateThread(function ()
+            while DoesEntityExist(vehicle) and GetPedInVehicleSeat(vehicle, -1) == playerPed do
+                if IsVehicleEngineOn(vehicle) then
+                    Entity(vehicle).state:set('qb-fuel', GetVehicleFuelLevel(vehicle) + 0.0, true)
+                end
+                Wait(Config.FuelSyncTime*1000)
+            end 
+        end)
     end)
 
     AddEventHandler('onResourceStart', function(resourceName)
@@ -55,12 +57,14 @@ if Config.SyncFuelBetweenPlayers then
         local vehicle = GetVehiclePedIsIn(playerPed, false)
         if vehicle == 0 or GetPedInVehicleSeat(vehicle, -1) ~= playerPed then return end
 
-        while DoesEntityExist(vehicle) and GetPedInVehicleSeat(vehicle, -1) == playerPed do
-            if IsVehicleEngineOn(vehicle) then
-                local fuel = GetVehicleFuelLevel(vehicle)
-                Entity(vehicle).state:set('qb-fuel', fuel + 0.0, true)
-            end
-            Wait(Config.FuelSyncTime*1000)
-        end
+        CreateThread(function ()
+            while DoesEntityExist(vehicle) and GetPedInVehicleSeat(vehicle, -1) == playerPed do
+                if IsVehicleEngineOn(vehicle) then
+                    local fuel = GetVehicleFuelLevel(vehicle)
+                    Entity(vehicle).state:set('qb-fuel', fuel + 0.0, true)
+                end
+                Wait(Config.FuelSyncTime*1000)
+            end 
+        end)
     end)
 end
