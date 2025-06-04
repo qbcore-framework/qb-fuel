@@ -2,9 +2,6 @@ import { TRANSLATIONS } from "./translations.js";
 
 const $ = (selector) => document.querySelector(selector);
 
-const LANGUAGE = "es";
-document.documentElement.lang = LANGUAGE;
-
 const $post = async (url, data) => {
     if (!url.startsWith("/")) url = `/${url}`;
 
@@ -78,8 +75,9 @@ const updateLimits = () => {
     $price.step = LITER_PRICE;
 };
 
-const setupTranslations = () => {
-    const translations = TRANSLATIONS[LANGUAGE] ?? TRANSLATIONS["en"];
+const setupTranslations = (language) => {
+    document.documentElement.lang = language;
+    const translations = TRANSLATIONS[language] ?? TRANSLATIONS["en"];
     const elements = document.querySelectorAll("[data-translations]");
 
     elements.forEach((element) => {
@@ -156,6 +154,8 @@ window.addEventListener("message", ({ data }) => {
     if (data.action === "hide") {
         $("body").style.display = "none";
     }
-});
 
-setupTranslations();
+    if (data.action === "setLanguage") {
+        setupTranslations(data.language);
+    }
+});
