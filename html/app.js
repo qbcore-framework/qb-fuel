@@ -75,6 +75,7 @@ const updateLimits = () => {
     $capacity.innerText = CURRENT_FUEL;
     $liter.max = maxLiter;
     $price.max = Math.floor(maxLiter * LITER_PRICE);
+    $price.step = LITER_PRICE;
 };
 
 const setupTranslations = () => {

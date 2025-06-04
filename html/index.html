@@ -10,42 +10,45 @@
     </head>
     <body>
         <main>
-            <h1 data-translations="fuel"></h1>
-            <span data-translations="vehicle_fuel">
-                <span id="capacity"></span>
-            </span>
+            <header>
+                <h1 data-translations="fuel"></h1>
+                <div class="fuel-info" data-translations="vehicle_fuel">
+                    <span id="capacity"></span>
+                </div>
+            </header>
             <section>
                 <div
                     class="progress"
                     data-value="0"
                     data-max="100"
                     data-min="0"
+                    role="progressbar"
                 >
                     <div></div>
                 </div>
-                <form>
-                    <div>
-                        <label for="liter" data-translations="liters"></label>
-                        <input
-                            min="0"
-                            max="50"
-                            type="number"
-                            id="liter"
-                            name="liter"
-                            value="0"
-                        />
-                    </div>
-                    <div>
-                        <label for="price" data-translations="price"></label>
-                        <input
-                            min="0"
-                            type="number"
-                            id="price"
-                            name="price"
-                            value="0"
-                        />
-                    </div>
-                    <button data-translations="refill"></button>
+                <form aria-label="Fuel purchase form">
+                    <label for="liter" data-translations="liters"></label>
+                    <input
+                        min="0"
+                        max="50"
+                        step="1"
+                        type="number"
+                        id="liter"
+                        name="liter"
+                        value="0"
+                        placeholder="0"
+                    />
+                    <label for="price" data-translations="price"></label>
+                    <input
+                        min="0"
+                        step="1"
+                        type="number"
+                        id="price"
+                        name="price"
+                        value="0"
+                        placeholder="0"
+                    />
+                    <button type="submit" data-translations="refill"></button>
                 </form>
             </section>
         </main>
