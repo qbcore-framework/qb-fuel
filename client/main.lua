@@ -188,6 +188,14 @@ local nozzleToVehicle = function (veh)
     CurrentVehicle = veh
     FreezeEntityPosition(CurrentObjects.nozzle, true)
     FreezeEntityPosition(CurrentVehicle, true)
+
+    CreateThread((function ()
+        while DoesEntityExist(CurrentObjects.nozzle) and DoesEntityExist(CurrentVehicle) and Entity(veh).state.nozzleAttached do
+            Wait(1000)
+        end
+
+        removeObjects()
+    end))
 end
 
 local refillVehicleFuel = function (liter)
