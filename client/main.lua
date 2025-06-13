@@ -176,7 +176,6 @@ local nozzleToVehicle = function (veh)
     local zCoords = diff / divisor
 
     LocalPlayer.state:set('hasNozzle', false, true)
-    local ped = PlayerPedId()
 
     if isBike then
         AttachEntityToEntity(CurrentObjects.nozzle, veh, tankBone, 0.0 + nozzleModifiedPosition.x, -0.2 + nozzleModifiedPosition.y, 0.2 + nozzleModifiedPosition.z, -80.0, 0.0, 0.0, true, true, false, false, 1, true)
