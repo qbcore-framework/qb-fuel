@@ -46,7 +46,7 @@ if Config.SyncFuelBetweenPlayers then
                     Entity(vehicle).state:set('qb-fuel', GetVehicleFuelLevel(vehicle) + 0.0, true)
                 end
                 Wait(Config.FuelSyncTime*1000)
-            end 
+            end
         end)
     end)
 
@@ -64,7 +64,7 @@ if Config.SyncFuelBetweenPlayers then
                     Entity(vehicle).state:set('qb-fuel', fuel + 0.0, true)
                 end
                 Wait(Config.FuelSyncTime*1000)
-            end 
+            end
         end)
     end)
 end
