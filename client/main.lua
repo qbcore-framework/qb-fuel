@@ -18,7 +18,7 @@ end
 
 local removeObjects = function ()
     CurrentPump = nil
-    if CurrentVehicle then 
+    if CurrentVehicle then
         Entity(CurrentVehicle).state:set('nozzleAttached', false, true)
         FreezeEntityPosition(CurrentVehicle, false)
         CurrentVehicle = nil
