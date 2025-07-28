@@ -2,7 +2,7 @@ fx_version "cerulean"
 game "gta5"
 
 author "Cocodrulo"
-version "0.0.3"
+version '0.0.4'
 description "A siple Fuel System for FiveM"
 
 ui_page "html/index.html"
